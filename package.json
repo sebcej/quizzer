@@ -1,0 +1,16 @@
+{
+  "name": "quizzer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Seba",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "fastify": "^2.12.0",
+    "fs-extra": "^8.1.0"
+  }
+}
