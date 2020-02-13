@@ -16,6 +16,12 @@ configDefaults = {
     sourceURL: "/api"
 }
 
+/**
+ * 
+ * @param {Object} fastify - Fastify instance
+ * @param {*} opts - Settings sent from plugin initialization
+ */
+
 async function apiLoader (fastify, opts) {
     const settings = {...configDefaults, ...opts},
           folderToLoad = `${settings.root}${settings.sourceFolder}/`;
@@ -39,6 +45,13 @@ async function apiLoader (fastify, opts) {
         })
     });
 }
+
+/**
+ * 
+ * @param {String} absolutePath - Absolute path of the folder
+ * @param {*} relativePath - Path of the folder relative to the web root
+ * @param {*} callback - Callback for fastify GET/POST initialization
+ */
 
 async function loadFolder(absolutePath, relativePath, callback) {
     let folderContents = await fs.readdir(absolutePath);

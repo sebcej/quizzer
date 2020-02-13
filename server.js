@@ -2,7 +2,8 @@ require("dotenv").config();
 const fastify = require("fastify")({
         logs: process.env.DEBUG_REQUESTS || false
     }),
-    apiLoader = require("./plugins/apiLoader");
+    apiLoader = require("./plugins/apiLoader"),
+    socketLoader = require("./plugins/socketLoader");
 
 global.paths = {
     root: __dirname
@@ -14,8 +15,7 @@ fastify.register(apiLoader, {
     sourceURL: "/api"
 });
 
-
-
+fastify.register(socketLoader)
 
 fastify.listen(process.env.PORT || 8080, (err, address) => {
     if (err) 
