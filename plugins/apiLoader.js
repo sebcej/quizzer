@@ -11,13 +11,14 @@ const apiDefaults = {
     method: "POST"
 },
 configDefaults = {
+    root: global.paths?global.paths.root:"",
     sourceFolder: "/api",
     sourceURL: "/api"
 }
 
 async function apiLoader (fastify, opts) {
     const settings = {...configDefaults, ...opts},
-          folderToLoad = `${global.paths.root}${settings.sourceFolder}/`;
+          folderToLoad = `${settings.root}${settings.sourceFolder}/`;
 
     return await loadFolder(folderToLoad, settings.sourceURL, (apiObject, fileRelativePath, fileAbsolutePath) => {
         fastify.log.debug(`Loading: ${fileRelativePath}`);

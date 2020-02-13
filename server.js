@@ -9,6 +9,7 @@ global.paths = {
 }
 
 fastify.register(apiLoader, {
+    root: global.paths.root,
     sourceFolder: "/api",
     sourceURL: "/api"
 });
