@@ -1,0 +1,8 @@
+{
+    "adminUserName": "admin",
+    "pointsToWin": 5,
+    "timeouts": {
+        "question": 30,
+        "respond": 5
+    }
+}

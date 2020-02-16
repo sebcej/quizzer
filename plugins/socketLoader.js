@@ -6,7 +6,9 @@ const fastifyPlugin = require('fastify-plugin'),
 const configDefault = {
 	root: global.paths?global.paths.root:'',
 	socketOptions: {},
-	sourcePath: '/socket'
+	sourceFolder: '/socket',
+
+	onConnection: null
 }
 
 /**
@@ -26,20 +28,22 @@ async function loadFolder(absolutePath, objectPath, callback) {
 		for (let i = 0; i < folderContents.length; i++) {
 			const folderItem = folderContents[i];
 
-			// Ensure that paths have the ending slash
+			// Ensure that paths have the ending slash and dot for object
 			if (!/\/$/.test(absolutePath))
 				absolutePath += "/";
+			if (!/\.$/.test(objectPath) && objectPath !== "")
+				objectPath += ".";
 
 			const itemAbsolutePath = `${absolutePath}${folderItem}`,
-				itemObjectPath = `${objectPath}${folderItem}`,
+				itemObjectPath = `${objectPath}${folderItem.replace(/\.js$/gi, "")}`,
 				itemStat = await fs.stat(itemAbsolutePath)
 
 			if (!itemStat.isFile())
-				return await loadFolder(itemAbsolutePath, itemRelativePath, callback) // Recursively load nested folder
+				return await loadFolder(itemAbsolutePath, itemObjectPath, callback) // Recursively load nested folder
 
 			const apiSourceObject = require(itemAbsolutePath);
 
-			callback(itemRelativePath, itemAbsolutePath);
+			callback(apiSourceObject, itemObjectPath, itemAbsolutePath);
 		}
 	} catch (e) {
 		return Promise.reject(e);
@@ -56,7 +60,8 @@ async function loadFolder(absolutePath, objectPath, callback) {
  */
 
 async function fastiySocketIo(fastify, options) {
-  const settings = {...configDefault, ...options};
+  const settings = {...configDefault, ...options}, 
+  		folderToLoad = `${settings.root}${settings.sourceFolder}/`;
   let actions = {}
 
   try {
@@ -65,8 +70,9 @@ async function fastiySocketIo(fastify, options) {
     // use io wherever you want to use socketio, just provide it in the registration context
 	fastify.decorate('io', io);
 	
-	await loadFolder(settings.root, "", (action, actionObjectPath) => {
-		objectPath.set(actions, actionObjectPath);
+	await loadFolder(folderToLoad, "", (apiSourceObject, actionObjectPath, actionAbsolutePath) => {
+		// Save all found socket routes in an object that reflects the folder hierarhy.
+		objectPath.set(actions, actionObjectPath, apiSourceObject);
 	})
 	
 	io.on("connection", socket => {
@@ -76,8 +82,18 @@ async function fastiySocketIo(fastify, options) {
         const actionName = action.name,
 			  actionData = action.data;
 
-		
-      });
+		let actionFunction = objectPath.get(actions, actionName);
+
+		if (actionFunction)
+			actionFunction(socket, actionData);
+		else
+			socket.send("error", {
+				id: "ROUTE_NOT_FOUND"
+			});
+	  });
+	  
+	  
+	  settings.onConnection&&settings.onConnection(socket)
     });
   } catch (error) {
     return Promise.reject(error)

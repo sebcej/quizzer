@@ -3,11 +3,19 @@ const fastify = require("fastify")({
         logs: process.env.DEBUG_REQUESTS || false
     }),
     apiLoader = require("./plugins/apiLoader"),
-    socketLoader = require("./plugins/socketLoader");
+    socketLoader = require("./plugins/socketLoader"),
+    fastifySession = require('fastify-session'),
+    fastifyCookie = require('fastify-cookie');
 
 global.paths = {
-    root: __dirname
+    root: __dirname,
+    config: `${__dirname}/config.json`
 }
+
+fastify.register(fastifyCookie);
+fastify.register(fastifySession, {
+    secret: 'SDHJIJNBFDCFGHIJé)(/YTRETgGJGF@°§é^^KGJHG'
+});
 
 fastify.register(apiLoader, {
     root: global.paths.root,
@@ -15,7 +23,13 @@ fastify.register(apiLoader, {
     sourceURL: "/api"
 });
 
-fastify.register(socketLoader)
+fastify.register(socketLoader, {
+    root: global.paths.root,
+    sourceFolder: "/socket",
+    onConnection (connection) {
+        console.log("Connected")
+    }
+})
 
 fastify.listen(process.env.PORT || 8080, (err, address) => {
     if (err) 
