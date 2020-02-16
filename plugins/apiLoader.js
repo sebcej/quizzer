@@ -29,8 +29,9 @@ async function apiLoader (fastify, opts) {
     return await loadFolder(folderToLoad, settings.sourceURL, (apiObject, fileRelativePath, fileAbsolutePath) => {
         fastify.log.debug(`Loading: ${fileRelativePath}`);
 
+        console.log("Loading route", fileRelativePath);
         fastify[apiObject.method.toLowerCase()](`${fileRelativePath}`, async (request, reply) => {
-            fastify.log.debug(`Responding to: ${fileRelativePath}`)
+            console.log(`Responding to: ${fileRelativePath}`)
 
             if (apiObject.onRequest){
                 let response = await apiObject.onRequest(request, reply);
@@ -41,6 +42,13 @@ async function apiLoader (fastify, opts) {
                         .code(200)
                         .header('Content-Type', 'application/json; charset=utf-8')
                         .send(response)
+            } else {
+                return reply
+                    .code(500)
+                    .header('Content-Type', 'application/json; charset=utf-8')
+                    .send({
+                        error: "NO_HANDLER"
+                    })
             }
         })
     });
@@ -76,9 +84,9 @@ async function loadFolder(absolutePath, relativePath, callback) {
             return await loadFolder(itemAbsolutePath, itemRelativePath, callback) // Recursively load nested folder
 
         const apiSourceObject = require(itemAbsolutePath);
-        let apiObject = {...apiDefaults, apiSourceObject};
+        let apiObject = {...apiDefaults, ...apiSourceObject};
 
-        callback(apiObject, itemRelativePath, itemAbsolutePath);
+        callback(apiObject, itemRelativePath.replace(/\.js$/, ""), itemAbsolutePath);
     }
 }
 

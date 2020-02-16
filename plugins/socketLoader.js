@@ -7,6 +7,7 @@ const configDefault = {
 	root: global.paths?global.paths.root:'',
 	socketOptions: {},
 	sourceFolder: '/socket',
+	store: true,
 
 	onConnection: null
 }
@@ -65,8 +66,20 @@ async function fastiySocketIo(fastify, options) {
   let actions = {}
 
   try {
-    const io = SocketIOServer(fastify.server, settings.socketOptions);
+	const io = SocketIOServer(fastify.server, settings.socketOptions);
 
+	/*// Enable session store syncer
+	if (settings.store)
+		io.use((socket, next) => {
+			var cookie_string = socket.request.headers.cookie;
+			console.log("Cookies: ", cookie_string)
+
+			console.log(socket)
+
+			socket.session = fastify
+			next()
+		});
+*/
     // use io wherever you want to use socketio, just provide it in the registration context
 	fastify.decorate('io', io);
 	
@@ -75,8 +88,8 @@ async function fastiySocketIo(fastify, options) {
 		objectPath.set(actions, actionObjectPath, apiSourceObject);
 	})
 	
-	io.on("connection", socket => {
-      fastify.log.debug("Connected new client");
+	io.on("connection", (socket) => {
+	  fastify.log.debug("Connected new client");
 
       socket.on("action", action => {
         const actionName = action.name,
@@ -101,5 +114,5 @@ async function fastiySocketIo(fastify, options) {
 }
 
 module.exports = fastifyPlugin(fastiySocketIo, {
-  name: 'socketServer',
+  name: 'fastify-socket',
 });

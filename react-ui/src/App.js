@@ -31,6 +31,7 @@ export default class App extends React.Component {
     }
 
     userUpdate (data) {
+        console.log("Updating user", data);
         this.setState(data);
 
     }
