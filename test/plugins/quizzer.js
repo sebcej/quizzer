@@ -1,4 +1,4 @@
-const apiPath = "../../plugins/quizzer";
+const apiPath = "../../plugins/quizzer/Quizzer";
 
 const proxyquire = require("proxyquire").noCallThru(),
       chai = require("chai"),
@@ -8,11 +8,29 @@ const proxyquire = require("proxyquire").noCallThru(),
       quizzer = require(apiPath);
 
 describe("plugins", () => {
-    let quizzerInstance = null
+    let quizzerInstance = null,
+        sentMessages = [],
+        broadcastedMessages = []
 
     // Reinitialize quizzer instance in order to have a clean environment before each test
     beforeEach(() => {
+        sentMessages = [];
+        broadcastedMessages = []
         quizzerInstance = quizzer(config, true);
+        quizzerInstance.setConnection({
+            emit: function (event, data) {
+                sentMessages.push({
+                    event,
+                    data
+                })
+            },
+            broadcast: function (event, data) {
+                broadcastedMessages.push({
+                    event, 
+                    data
+                })
+            }
+        })
     })
 
     context("@quizzer", () => {
@@ -20,32 +38,31 @@ describe("plugins", () => {
             it("Should login user and return it", () => {
                 let response = quizzerInstance.loginUser("tester");
     
-                chai.expect(quizzerInstance.getUser("tester")).to.be.an("object")
+                chai.expect(quizzerInstance.getUser("tester").getDetails()).to.be.an("object")
                 chai.expect(quizzerInstance.getUser("nonexistant")).to.equal(false)
-                chai.expect(quizzerInstance.getUser("tester")).to.have.property("isAdmin", false)
-                chai.expect(response).to.have.property("success", true)
+                chai.expect(quizzerInstance.getUser("tester").getDetails()).to.have.property("isAdmin", false)
+                chai.expect(response).to.be.an("object")
             })
     
             it("Should return error as user is empty string", () => {
-                let response = quizzerInstance.loginUser("");
-    
-                chai.expect(response).to.have.property("error", "NO_USERNAME")
+                let response = quizzerInstance.loginUser("")
+                
+                chai.expect(response).to.have.property("success", false)
             })
     
             it("Should return error the second time as user is already logged", () => {
                 let response = quizzerInstance.loginUser("tester");
                 let response2 = quizzerInstance.loginUser("tester");
-    
-    
-                chai.expect(response).to.have.property("success", true)
-                chai.expect(response2).to.have.property("error", "USERNAME_ALREADY_USED")
+
+                chai.expect(response.getDetails()).to.have.property("userName", "tester")
+                chai.expect(response2).to.have.property("error", "USER_ALREADY_LOGGED")
             })
     
             it("Should login admin", () => {
                 let response = quizzerInstance.loginUser("admin");
     
-                chai.expect(response).to.have.property("success", true)
-                chai.expect(quizzerInstance.getUser("admin")).to.have.property("isAdmin", true)
+                chai.expect(response.getDetails()).to.have.property("userName", "admin")
+                chai.expect(quizzerInstance.getUser("admin").getDetails()).to.have.property("isAdmin", true)
             })
         })
 
@@ -53,18 +70,16 @@ describe("plugins", () => {
             it("Should add connection to admin object", () => {
                 let response = quizzerInstance.loginUser("admin");
 
-                quizzerInstance.setAdminConnection({})
+                quizzerInstance.setConnection({}, "admin")
 
-                chai.expect(response).to.have.property("success", true)
-                chai.expect(quizzerInstance.getUser("admin")).to.have.property("connection")
+                chai.expect(response.getDetails()).to.have.property("userName", "admin")
+                chai.expect(quizzerInstance.getUser("admin").getDetails()).to.have.property("connection")
             })
 
             it("Should fail as no admin is present", () => {
                 let response = quizzerInstance.loginUser("tester");
 
-                let connection = quizzerInstance.setAdminConnection({})
-
-                chai.expect(connection).to.have.property("error", "ADMIN_CONNECTION_FAILED")
+                chai.expect(() => quizzerInstance.setConnection({}, "admin")).to.Throw("NO_USER")
             })
         })
 
@@ -72,8 +87,8 @@ describe("plugins", () => {
             it("Should not ban a not present user", () => {
                 let banResponse = quizzerInstance.banUser("tester")
 
-                chai.expect(banResponse).to.have.property("error", "NO_USER")
-                chai.expect(quizzerInstance.getBannedUsers()).to.be.an('array').lengthOf(0)
+                chai.expect(banResponse).to.have.property("success", false)
+                chai.expect(quizzerInstance.getUsers().getBannedUsersList()).to.be.an('array').lengthOf(0)
             })
 
             it("Should ban an user and put it in banned array", () => {
@@ -81,10 +96,40 @@ describe("plugins", () => {
 
                 let banResponse = quizzerInstance.banUser("tester")
 
-                chai.expect(response).to.have.property("success", true)
+                chai.expect(response.getDetails()).to.have.property("userName", "tester")
                 chai.expect(banResponse).to.have.property("success", true)
-                chai.expect(quizzerInstance.getBannedUsers()).to.be.an('array').that.does.include("tester")
+                chai.expect(quizzerInstance.getUsers().getBannedUsersList()).to.be.an('array').that.does.include("tester")
             })
         })
+
+        /*context("broadcastQuestion()", () => {
+            it("Should send message to user directly by client side validation", () => {
+                quizzerInstance.loginUser("tester");
+
+                quizzerInstance.broadcastQuestion(false, "tester");
+
+                chai.expect(broadcastedMessages).to.include({
+                    event: "questionStatus",
+                    data: {
+
+                    }
+                })
+            })
+
+            it("Should send message to user directly by server side direct connection", () => {
+                quizzerInstance.loginUser("tester");
+
+                quizzerInstance.broadcastQuestion("tester", {
+                    test: true
+                });
+
+                chai.expect(sentMessages).to.include({
+                    event: "questionStatus",
+                    data: {
+                        test: true
+                    }
+                })
+            })
+        });*/
     })
 })

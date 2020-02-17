@@ -80,8 +80,10 @@ async function loadFolder(absolutePath, relativePath, callback) {
               itemRelativePath = `${relativePath}${folderItem}`,
               itemStat = await fs.stat(itemAbsolutePath)
 
-        if (!itemStat.isFile())
-            return await loadFolder(itemAbsolutePath, itemRelativePath, callback) // Recursively load nested folder
+        if (!itemStat.isFile()) {
+            await loadFolder(itemAbsolutePath, itemRelativePath, callback) // Recursively load nested folder
+            continue;
+        }
 
         const apiSourceObject = require(itemAbsolutePath);
         let apiObject = {...apiDefaults, ...apiSourceObject};

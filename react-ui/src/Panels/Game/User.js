@@ -5,7 +5,9 @@ import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 
 export default class User extends React.Component {
     constructor () {
-
+        this.status = {
+            question: false
+        }
     }
 
     componentDidMount () {
@@ -16,14 +18,19 @@ export default class User extends React.Component {
         unregisterEvent("questionStatus", this.questionStatus)
     }
 
-    questionStatus () {
-        
+    questionStatus (data) {
+        console.log("Question received", data);
+        this.setState({
+            question: data
+        })
     }
 
     render () {
         return (
             <div>
                 Das good
+
+                {this.status.question.text}
             </div>
         )
     }

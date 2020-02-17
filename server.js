@@ -14,7 +14,7 @@ const fastify = require("fastify")({
     fastifySession = require('fastify-session'),
     fastifyCookie = require('fastify-cookie'),
 
-    quizzer = require('./plugins/quizzer')(require(global.paths.config), socketLoader, false);
+    quizzer = require('./plugins/quizzer/Quizzer')(require(global.paths.config), socketLoader, false);
 
 // Socket and api session manager
 fastify.register(fastifyCookie);
@@ -52,15 +52,13 @@ fastify.register(socketLoader, {
             admin: socket.session.isAdmin || false
         });
 
+        // If present add connection to user
+        if (socket.session.username)
+            quizzer.setUserConnection(socket.session.username, socket);
+
         // Send questions initial state as the user may reload the page during the game
-        let question = quizzer.getCurrentQuestion()
-        if (question && socket.session.username && socket.session.loggedIn)
-            socket.send("questionStatus", {
-                id: question.id,
-                text: question.text,
-                awaitingResponse: question.awaitingResponse,
-                awaitingApproval: question.awaitingApproval
-            })
+        if (socket.session.username && socket.session.loggedIn && quizzer.questionsPending())
+            question.broadcastQuestion(false, socket.session.username)
     }
 })
 

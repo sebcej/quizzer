@@ -11,7 +11,7 @@ module.exports = {
             req.session.isAdmin = req.body.username === config.adminUserName
         }
 
-        req.emit()
+        //req.emit()
 
        return response
     }
