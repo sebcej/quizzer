@@ -18,8 +18,14 @@ const fastify = require("fastify")({
 
 // Socket and api session manager
 fastify.register(fastifyCookie);
+
+const store = new fastifySession.Store(),
+      signature = 'SDHJIJNBFDCFGHIJé)(/YTRETgGJGF@°§é^^KGJHG';
+
 fastify.register(fastifySession, {
-    secret: 'SDHJIJNBFDCFGHIJé)(/YTRETgGJGF@°§é^^KGJHG',
+    secret: signature,
+    store,
+    expires: 1800000,
     cookie: { secure: false }
 })
 
@@ -32,10 +38,16 @@ fastify.register(apiLoader, {
 fastify.register(socketLoader, {
     root: global.paths.root,
     sourceFolder: "/socket",
+    store: {
+        api: store,
+        secret: signature
+    },
     onConnection (socket) {
-        //console.log("Socket", socket.session);
+        
+        // Set user initial state
         socket.send("userStatusUpdate", {
-            test: true
+            loggedAs: socket.session.username || false,
+            admin: socket.session.isAdmin || false
         })
     }
 })

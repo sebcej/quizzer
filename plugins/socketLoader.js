@@ -1,7 +1,9 @@
 const fastifyPlugin = require('fastify-plugin'),
       SocketIOServer = require('socket.io'),
 	  fs = require('fs-extra'),
-	  objectPath = require('object-path');
+	  objectPath = require('object-path'),
+	  cookie = require("cookie"),
+	  cookieSignature = require('cookie-signature');
 	  
 const configDefault = {
 	root: global.paths?global.paths.root:'',
@@ -68,18 +70,31 @@ async function fastiySocketIo(fastify, options) {
   try {
 	const io = SocketIOServer(fastify.server, settings.socketOptions);
 
-	/*// Enable session store syncer
-	if (settings.store)
+	/**
+	 * Enable session store syncer
+	 * 
+	 * Check the existence of a session on fastify side and import it in current socket session
+	 * 
+	 * The session is in read-only mode
+	 */
+	if (settings.store && settings.store.api && settings.store.secret)
 		io.use((socket, next) => {
-			var cookie_string = socket.request.headers.cookie;
-			console.log("Cookies: ", cookie_string)
 
-			console.log(socket)
+			let cookieString = socket.request.headers.cookie,
+				cookieObj = cookie.parse(cookieString),
+				decryptedSessionId = cookieObj.sessionId?cookieSignature.unsign(cookieObj.sessionId, settings.store.secret):false;
 
-			socket.session = fastify
-			next()
+			if (decryptedSessionId) {
+				settings.store.api.get(decryptedSessionId, function (err, sessionObj) {
+					socket.session = sessionObj || {};
+					next()
+				})
+			} else {
+				socket.session = {}
+				next()
+			}
 		});
-*/
+
     // use io wherever you want to use socketio, just provide it in the registration context
 	fastify.decorate('io', io);
 	
