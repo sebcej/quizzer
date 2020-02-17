@@ -4,51 +4,131 @@
  * Main quizzer implementation. 
  */
 
-const config = require(`${global.paths.config}`);
+let quizzerInstance = false;
 
-function quizzer () {
-    let t = this, 
-        users = [], 
-        questions = [],
-        gameStatus = {
-            
-        };
+function setTimers (status, config) {
 
-    t.loginUser = (userName) => {
-        var userPresent = false;
+}
 
+function cleanUserName (userName) {
+    if (!userName)
+        return undefined
+    return userName.trim().toLowerCase()
+}
+class Quizzer {
+    constructor (config) {
+        this.config = config;
+        this.connection = false;
+
+        this.status = {
+            users: {},
+            questions: [],
+            gameStatus: {
+                bannedUsers: [],
+                userResponding: false,
+                awaitingResponse: false,
+                awaitingApproval: false
+            }
+        }
+    }
+
+    setConnection (io) {
+        if (!this.connection)
+            this.connection = io;
+    }
+
+    loginUser (userName) {
         if (!userName)
             return {
                 error: "NO_USERNAME"
             }
 
-        userName = userName.trim().toLowerCase();
+        userName = cleanUserName(userName);
 
-        users.forEach((user) => {
-            if (user.name === userName)
-                userPresent = true
-        })
+        let user = this.status.users[userName]
 
-        if (userPresent)
+        if (user && user.loggedIn === true)
             return {
                 error: "USERNAME_ALREADY_USED"
             }
-        
-        users.push({
-            name: userName
-        })
+        else if (user) {
+            this.status.users[userName].loggedIn = true
+        } else {
+            let isAdmin = this.config.adminUserName === userName;
+
+            this.status.users[userName] = {
+                loggedIn: true,
+                isAdmin,
+                isBanned: this.status.gameStatus.bannedUsers.indexOf(userName) >= 0
+            }
+        }
 
         return {
             success: true
         }
     }
 
-    t.insertQuestion = (userName, question) => {
+    getUser (userName) {
+        return this.status.users[userName] || false
+    }
+
+    setAdminConnection (socket) {
+        let adminUser = this.status.users[this.config.adminUserName];
+
+        if (adminUser && adminUser.loggedIn)
+            this.status.users[this.config.adminUserName].connection = socket;
+        else
+            return {
+                error: "ADMIN_CONNECTION_FAILED"
+            }
+    }
+
+    checkResponseWithAdmin () {
 
     }
 
-    return t;
+    banUser (userName) {
+        userName = cleanUserName(userName)
+        if (!this.status.users[userName])
+            return {
+                error: "NO_USER"
+            }
+
+        if (userName !== "" && this.status.gameStatus.bannedUsers.indexOf(userName) < 0)
+            this.status.gameStatus.bannedUsers.push(userName)
+
+        return {
+            success: true
+        }
+    }
+
+    getBannedUsers () {
+        return this.status.gameStatus.bannedUsers;
+    }
+
+    setUserResponding (userName) {
+        userName = cleanUserName(userName)
+        if (!this.status.users[userName])
+            return {
+                error: "NO_USER"
+            }
+
+        this.status.gameStatus.userResponding = userName;
+        this.updateUsers()
+    }
+
+    insertQuestion (questionText) {
+
+    }
 }
 
 
-module.exports = new quizzer()
+module.exports = function (config, reinit) {
+    if (reinit)
+        quizzerInstance = false;
+    if (quizzerInstance)
+        return quizzerInstance
+    if (!config)
+        return new Error("Config is needed for initialization");
+    return quizzerInstance = new Quizzer(config)
+}

@@ -27,7 +27,7 @@ let socketLoaderStub = {
 }, actionsStack = {};
 const socketLoader = proxyquire(apiPath, socketLoaderStub);
 
-describe("@plugins", () => {
+describe("plugins", () => {
 
     afterEach(async () => {
         sinon.restore();
@@ -35,7 +35,7 @@ describe("@plugins", () => {
         return sinon.resetBehavior();
     });
 
-    context("socketLoader()", () => {
+    context("@socketLoader", () => {
         it("Should do nothing as no routes are loaded", async () => {
             const fastifyStub = {
                 decorate () {return {}}

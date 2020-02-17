@@ -102,6 +102,8 @@ async function fastiySocketIo(fastify, options) {
 		// Save all found socket routes in an object that reflects the folder hierarhy.
 		objectPath.set(actions, actionObjectPath, apiSourceObject);
 	})
+
+	settings.onInit&&settings.onInit(io)
 	
 	io.on("connection", (socket) => {
 	  fastify.log.debug("Connected new client");
@@ -120,9 +122,15 @@ async function fastiySocketIo(fastify, options) {
 			});
 	  });
 	  
-	  
 	  settings.onConnection&&settings.onConnection(socket)
-    });
+
+	  if (settings.onDisconnect)
+	  	socket.on("disconnect", (socket) => {
+			settings.onDisconnect(socket)
+		})
+	});
+	
+	return io;
   } catch (error) {
     return Promise.reject(error)
   }

@@ -14,7 +14,7 @@ const fastify = require("fastify")({
     fastifySession = require('fastify-session'),
     fastifyCookie = require('fastify-cookie'),
 
-    quizzer = require('./plugins/quizzer');
+    quizzer = require('./plugins/quizzer')(require(global.paths.config), socketLoader, false);
 
 // Socket and api session manager
 fastify.register(fastifyCookie);
@@ -42,13 +42,25 @@ fastify.register(socketLoader, {
         api: store,
         secret: signature
     },
+    onInit (io) {
+        quizzer.setConnection(io);
+    },
     onConnection (socket) {
-        
         // Set user initial state
         socket.send("userStatusUpdate", {
             loggedAs: socket.session.username || false,
             admin: socket.session.isAdmin || false
-        })
+        });
+
+        // Send questions initial state as the user may reload the page during the game
+        let question = quizzer.getCurrentQuestion()
+        if (question && socket.session.username && socket.session.loggedIn)
+            socket.send("questionStatus", {
+                id: question.id,
+                text: question.text,
+                awaitingResponse: question.awaitingResponse,
+                awaitingApproval: question.awaitingApproval
+            })
     }
 })
 

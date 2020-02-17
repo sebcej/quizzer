@@ -16,14 +16,14 @@ let apiLoaderStub = {
 };
 const apiLoader = proxyquire(apiPath, apiLoaderStub);
 
-describe("@plugins", () => {
+describe("plugins", () => {
 
     afterEach(async () => {
         sinon.restore();
         return sinon.resetBehavior();
     });
 
-    context("apiLoader()", () => {
+    context("@apiLoader", () => {
         it("Should do nothing as no routes are loaded", async () => {
             const fastifyStub = {
                 get:  sinon.fake(),

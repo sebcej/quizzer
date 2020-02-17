@@ -1,11 +1,11 @@
 import React from 'react';
 import './App.scss';
 
-import Admin from "./Panels/Game/Admin"
-import User from "./Panels/Game/User"
-import Login from "./Panels/Login/Login"
+import Admin from "./Panels/Game/Admin";
+import User from "./Panels/Game/User";
+import Login from "./Panels/Login/Login";
 
-import {registerEvent, sendEvent, unregisterEvent} from "./tools/socket"
+import {registerEvent, sendEvent, unregisterEvent} from "./tools/socket";
 
 
 export default class App extends React.Component {
@@ -37,9 +37,9 @@ export default class App extends React.Component {
     }
     pageMode () {
         if (this.state.loggedAs !== false && this.state.isAdmin === true)
-            return <Admin/>;
+            return <Admin username={this.status.loggedAs}/>;
         else if (this.state.loggedAs !== false && this.state.isAdmin === false)
-            return <User />;
+            return <User username={this.status.loggedAs}/>;
         else if (this.state.loggedAs === false)
             return <Login />;
     }
