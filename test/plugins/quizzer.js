@@ -17,7 +17,7 @@ describe("plugins", () => {
         sentMessages = [];
         broadcastedMessages = []
         quizzerInstance = quizzer(config, true);
-        quizzerInstance.setConnection({
+        quizzerInstance.users.setConnection({
             emit: function (event, data) {
                 sentMessages.push({
                     event,
@@ -36,69 +36,66 @@ describe("plugins", () => {
     context("@quizzer", () => {
         context("login()", () => {
             it("Should login user and return it", () => {
-                let response = quizzerInstance.loginUser("tester");
+                let response = quizzerInstance.users.loginUser("tester"),
+                    userId = response.getId();
     
-                chai.expect(quizzerInstance.getUser("tester").getDetails()).to.be.an("object")
-                chai.expect(quizzerInstance.getUser("nonexistant")).to.equal(false)
-                chai.expect(quizzerInstance.getUser("tester").getDetails()).to.have.property("isAdmin", false)
+                chai.expect(quizzerInstance.users.getUser(userId).getDetails()).to.be.an("object")
+                chai.expect(quizzerInstance.users.getUserByName("nonexistant")).to.equal(false)
+                chai.expect(quizzerInstance.users.getUser(userId).getDetails()).to.have.property("isAdmin", false)
                 chai.expect(response).to.be.an("object")
             })
     
-            it("Should return error as user is empty string", () => {
-                let response = quizzerInstance.loginUser("")
-                
-                chai.expect(response).to.have.property("success", false)
+            it("Should throw error as user is empty", () => {
+                chai.expect(() => quizzerInstance.users.loginUser()).to.Throw("NO_USERNAME")
             })
     
             it("Should return error the second time as user is already logged", () => {
-                let response = quizzerInstance.loginUser("tester");
-                let response2 = quizzerInstance.loginUser("tester");
+                let response = quizzerInstance.users.loginUser("tester")
 
                 chai.expect(response.getDetails()).to.have.property("userName", "tester")
-                chai.expect(response2).to.have.property("error", "USER_ALREADY_LOGGED")
+                chai.expect(() => quizzerInstance.users.loginUser("tester")).to.Throw("USER_ALREADY_LOGGED")
             })
     
             it("Should login admin", () => {
-                let response = quizzerInstance.loginUser("admin");
+                let response = quizzerInstance.users.loginUser("admin");
     
                 chai.expect(response.getDetails()).to.have.property("userName", "admin")
-                chai.expect(quizzerInstance.getUser("admin").getDetails()).to.have.property("isAdmin", true)
+                chai.expect(quizzerInstance.users.getUserByName("admin").getDetails()).to.have.property("isAdmin", true)
             })
         })
 
         context("setAdminConnection()", () => {
             it("Should add connection to admin object", () => {
-                let response = quizzerInstance.loginUser("admin");
+                let response = quizzerInstance.users.loginUser("admin"),
+                    userId = response.getId()
 
-                quizzerInstance.setConnection({}, "admin")
+                quizzerInstance.users.setConnection({}, userId)
 
                 chai.expect(response.getDetails()).to.have.property("userName", "admin")
-                chai.expect(quizzerInstance.getUser("admin").getDetails()).to.have.property("connection")
+                chai.expect(quizzerInstance.users.getUserByName("admin").getDetails()).to.have.property("connection")
             })
 
             it("Should fail as no admin is present", () => {
-                let response = quizzerInstance.loginUser("tester");
+                let response = quizzerInstance.users.loginUser("tester");
 
-                chai.expect(() => quizzerInstance.setConnection({}, "admin")).to.Throw("NO_USER")
+                chai.expect(() => quizzerInstance.users.setConnection({}, "admin")).to.Throw("NO_USER")
             })
         })
 
         context("banUser()", () => {
             it("Should not ban a not present user", () => {
-                let banResponse = quizzerInstance.banUser("tester")
-
-                chai.expect(banResponse).to.have.property("success", false)
-                chai.expect(quizzerInstance.getUsers().getBannedUsersList()).to.be.an('array').lengthOf(0)
+                chai.expect(() => quizzerInstance.users.banUser("tester")).to.Throw("NO_USER")
+                chai.expect(quizzerInstance.users.getBannedUsersList()).to.be.an('array').lengthOf(0)
             })
 
             it("Should ban an user and put it in banned array", () => {
-                let response = quizzerInstance.loginUser("tester");
+                let response = quizzerInstance.users.loginUser("tester"),
+                    userId = response.getId()
 
-                let banResponse = quizzerInstance.banUser("tester")
+                let banResponse = quizzerInstance.users.banUser(userId)
 
                 chai.expect(response.getDetails()).to.have.property("userName", "tester")
-                chai.expect(banResponse).to.have.property("success", true)
-                chai.expect(quizzerInstance.getUsers().getBannedUsersList()).to.be.an('array').that.does.include("tester")
+                chai.expect(quizzerInstance.users.getBannedUsersList()).to.be.an('array').that.does.include(userId)
             })
         })
 

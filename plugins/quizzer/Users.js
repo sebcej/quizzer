@@ -1,3 +1,4 @@
+const config = require(global.paths.config);
 
 function cleanUserName (userName) {
     if (!userName)
@@ -6,13 +7,22 @@ function cleanUserName (userName) {
 }
 
 class User {
-    constructor (userName) {
+    constructor (id, userName) {
         this.user = {
+            id,
             userName,
             isLogged: false,
             isAdmin: false,
             connection: false
         }
+    }
+
+    getId () {
+        return this.user.id;
+    }
+
+    getUserName () {
+        return this.user.userName
     }
 
     getDetails () {
@@ -35,6 +45,10 @@ class User {
         return this;
     }
 
+    isAdmin () {
+        return this.user.isAdmin || false
+    }
+
     setLogged (isLogged) {
         this.user.isLogged = isLogged || false
 
@@ -48,7 +62,17 @@ class User {
     }
 
     sendMessage (action, data) {
-        return this.connection.emit(action, data)
+        if (this.user.connection)
+            return this.user.connection.emit(action, data)
+        return false
+    }
+
+    sendStatus () {
+        return this.sendMessage("updateUserStatus", {
+            loggedAs: this.getUserName(),
+            admin: this.isAdmin(),
+            userId: this.getId()
+        })
     }
 }
 
@@ -57,12 +81,40 @@ module.exports = class Users {
         this.config = config;
         this.connection = false;
 
-        this.users = {}
+        this.users = []
         this.bannedUsers = []
     }
 
-    setBroadcastConnection (socket) {
-        this.connection = socket;
+    getAll () {
+        return this.users;
+    }
+
+    getUser (userId) {
+        if (!userId)
+            throw new Error("NO_USERID")
+
+        const user = this.users[userId - 1];
+
+        return user || false
+    }
+
+    getUserByName (userName) {
+        let userInstance = false;
+
+        for (let i = 0; i < this.users.length; i++) {
+            let user = this.users[i]
+
+            if (user.getUserName() === userName) {
+                userInstance = user;
+                break;
+            }
+        }
+
+        return userInstance;
+    }
+
+    getBannedUsersList () {
+        return this.bannedUsers;
     }
 
     newUser (userName) {
@@ -73,42 +125,70 @@ module.exports = class Users {
 
         let isAdmin = this.config.adminUserName === userName;
 
-        if (this.users[userName])
+        if (this.getUserByName(userName))
             throw new Error("USER_ALREADY_PRESENT")
 
-        let user = new User(userName).setAdmin(isAdmin)
-        this.users[userName] = user
+        // As we never remove users from array the id can be the array length + 1    
+        let userId = this.users.length + 1
+
+        let user = new User(userId, userName).setAdmin(isAdmin)
+        this.users.push(user)
 
         return user;
     }
 
-    getUser (userName) {
-        userName = cleanUserName(userName)
+    loginUser (userName) {
+        let user = this.getUserByName(userName);
 
-        if (!userName)
-            throw new Error("NO_USERNAME")
+        if (!user)
+            user = this.newUser(userName);
+            
+        if (user.isLoggedIn())
+            throw new Error("USER_ALREADY_LOGGED");
 
-        const user = this.users[userName];
+        user.setLoggedIn(true);
 
-        return user || false
+        return user
     }
 
-    getBannedUsersList () {
-        return this.bannedUsers;
+    setBroadcastConnection (socket) {
+        this.connection = socket;
     }
 
-    banUser (userName) {
-        userName = cleanUserName(userName)
+    /**
+     * The method will set instance for single user if id is present, otherwise will save the instance in broadcast mode.
+     * 
+     * @param {Object} socket Socket or io object related to socket.io instance
+     * @param {*} userId User id
+     */
 
-        if (!userName)
-            throw new Error("NO_USERNAME")
-
-        if (!this.users[userName])
-            throw new Error("NO_USER")
-
-        if (this.bannedUsers.indexOf(userName) < 0)
-            this.bannedUsers.push(userName)
+    setConnection (socket, userId) {
+        if (userId) {
+            let userObject = this.getUser(userId)
+            if (!userObject)
+                throw Error("NO_USER")
+            userObject.setConnection(socket);
+        } else {
+            this.setBroadcastConnection(socket);
+        }
         
         return this;
+    }
+
+    banUser (userId) {
+        if (!userId)
+            throw new Error("NO_USERID")
+
+        if (!this.getUser(userId))
+            throw new Error("NO_USER")
+
+        if (this.bannedUsers.indexOf(userId) < 0)
+            this.bannedUsers.push(userId)
+        
+        return this;
+    }
+
+    sendMessage (action) {
+        return this.connection.broadcast(action, data)
     }
 }

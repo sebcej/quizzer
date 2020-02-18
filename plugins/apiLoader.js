@@ -34,7 +34,7 @@ async function apiLoader (fastify, opts) {
             console.log(`Responding to: ${fileRelativePath}`)
 
             if (apiObject.onRequest){
-                let response = await apiObject.onRequest(request, reply);
+                let response = await apiObject.onRequest(request, reply, fastify);
 
                 // Response check allows the user to choose if wants to respond with json (default) or directly in onRequest function
                 if (response !== undefined)

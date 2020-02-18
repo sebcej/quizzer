@@ -1,10 +1,11 @@
 import React from 'react';
 
-import api from "../../tools/api";
 import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 
 export default class User extends React.Component {
-    constructor () {
+    constructor (props) {
+        super(props)
+        
         this.status = {
             question: false
         }

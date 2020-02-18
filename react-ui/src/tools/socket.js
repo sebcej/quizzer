@@ -1,6 +1,7 @@
-import openSocket from 'socket.io-client';
+import io from 'socket.io-client';
+import api from "./api"
 
-const  socket = openSocket(`http://${window.location.host}:${window.location.port}/`);
+const socket = io(`http://localhost:8080`);
 
 /**
  * 

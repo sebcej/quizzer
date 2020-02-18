@@ -3,31 +3,34 @@ require("dotenv").config();
 global.paths = {
     root: __dirname,
     plugins: `${__dirname}/plugins`,
+    quizzer: `${__dirname}/plugins/quizzer/Quizzer`,
     config: `${__dirname}/config.json`
 }
 
 const fastify = require("fastify")({
         logs: true
     }),
+    config = require(global.paths.config)
+    path = require("path"),
     apiLoader = require("./plugins/apiLoader"),
     socketLoader = require("./plugins/socketLoader"),
     fastifySession = require('fastify-session'),
     fastifyCookie = require('fastify-cookie'),
 
-    quizzer = require('./plugins/quizzer/Quizzer')(require(global.paths.config), socketLoader, false);
+    quizzer = require(global.paths.quizzer)(config, false);
 
 // Socket and api session manager
 fastify.register(fastifyCookie);
 
 const store = new fastifySession.Store(),
-      signature = 'SDHJIJNBFDCFGHIJé)(/YTRETgGJGF@°§é^^KGJHG';
+      secret = process.env.secret || "42istheanswertoeverythingintheuniverse";
 
 fastify.register(fastifySession, {
-    secret: signature,
+    secret: secret,
     store,
     expires: 1800000,
     cookie: { secure: false }
-})
+ });
 
 fastify.register(apiLoader, {
     root: global.paths.root,
@@ -40,26 +43,28 @@ fastify.register(socketLoader, {
     sourceFolder: "/socket",
     store: {
         api: store,
-        secret: signature
+        secret: secret
     },
     onInit (io) {
-        quizzer.setConnection(io);
+        quizzer.users.setConnection(io);
     },
     onConnection (socket) {
+        console.log("Connected")
+
+        if (!socket.session.userId)
+            return;
+        const user = quizzer.users.getUser(socket.session.userId)
+
         // Set user initial state
-        socket.send("userStatusUpdate", {
-            loggedAs: socket.session.username || false,
-            admin: socket.session.isAdmin || false
-        });
+        user.sendStatus()
 
-        // If present add connection to user
-        if (socket.session.username)
-            quizzer.setUserConnection(socket.session.username, socket);
-
-        // Send questions initial state as the user may reload the page during the game
-        if (socket.session.username && socket.session.loggedIn && quizzer.questionsPending())
-            question.broadcastQuestion(false, socket.session.username)
+        quizzer.sendGameStatus(user.getId())
     }
+})
+
+fastify.register(require('fastify-static'), {
+    root: path.join(__dirname, 'react-ui/build'),
+    prefix: '/'
 })
 
 // Start the party!

@@ -41,8 +41,10 @@ async function loadFolder(absolutePath, objectPath, callback) {
 				itemObjectPath = `${objectPath}${folderItem.replace(/\.js$/gi, "")}`,
 				itemStat = await fs.stat(itemAbsolutePath)
 
-			if (!itemStat.isFile())
-				return await loadFolder(itemAbsolutePath, itemObjectPath, callback) // Recursively load nested folder
+			if (!itemStat.isFile()) {
+				await loadFolder(itemAbsolutePath, itemObjectPath, callback) // Recursively load nested folder
+				continue;
+			}
 
 			const apiSourceObject = require(itemAbsolutePath);
 
@@ -85,6 +87,7 @@ async function fastiySocketIo(fastify, options) {
 				decryptedSessionId = cookieObj.sessionId?cookieSignature.unsign(cookieObj.sessionId, settings.store.secret):false;
 
 			if (decryptedSessionId) {
+				console.log("Recovering id: ", decryptedSessionId);
 				settings.store.api.get(decryptedSessionId, function (err, sessionObj) {
 					socket.session = sessionObj || {};
 					next()

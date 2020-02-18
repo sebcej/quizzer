@@ -1,18 +1,21 @@
-const quizzer = require(`${global.paths.plugins}/quizzer`)(),
-      config = require(global.paths.config);
+const quizzer = require(`${global.paths.quizzer}`)();
 
 module.exports = {
     method: "POST",
     onRequest (req, res) {
-        var response = quizzer.loginUser(req.body.username)
+        try {
+            var user = quizzer.users.loginUser(req.body.username);
 
-        if (!response.error) {
-            req.session.username = req.body.username
-            req.session.isAdmin = req.body.username === config.adminUserName
+            req.session.username = user.getUserName()
+            req.session.isAdmin = user.isAdmin()
+            req.session.userId = user.getId()
+
+            console.log("Fastify session", req.session.sessionId);
+        } catch (e) {
+            return res.send({
+                success: false,
+                error: e.message
+            })
         }
-
-        //req.emit()
-
-       return response
     }
 }

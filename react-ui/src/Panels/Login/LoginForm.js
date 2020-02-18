@@ -78,7 +78,7 @@ class LoginForm extends React.Component {
                 color="primary"
                 className={classes.submit}
                 >
-                Sign In
+                Let's quiz!
                 </Button>
             </form>
             </div>

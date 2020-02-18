@@ -10,14 +10,16 @@
   "author": "Seba",
   "license": "ISC",
   "dependencies": {
-    "cookie": "^0.4.0",
+    "cookie-parser": "^1.4.4",
     "dotenv": "^8.2.0",
     "fastify": "^2.12.0",
     "fastify-cookie": "^3.6.0",
     "fastify-plugin": "^1.6.0",
     "fastify-session": "^3.3.0",
+    "fastify-static": "^2.6.0",
     "fs-extra": "^8.1.0",
     "object-path": "^0.11.4",
+    "session.socket.io": "^0.2.1",
     "socket.io": "^2.3.0"
   },
   "devDependencies": {

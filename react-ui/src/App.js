@@ -15,6 +15,7 @@ export default class App extends React.Component {
         // Check if user is already present in localStorage
 
         this.state = {
+            id: false,
             loggedAs: false,
             isAdmin: false
         }
@@ -22,8 +23,9 @@ export default class App extends React.Component {
 
     componentDidMount () {
         registerEvent("userStatusUpdate", (data) => {
+            console.log("Updating status", data)
             this.userUpdate(data);
-        })
+        });
     }
 
     componentWillUnmount () {
@@ -31,15 +33,16 @@ export default class App extends React.Component {
     }
 
     userUpdate (data) {
-        console.log("Updating user", data);
-        this.setState(data);
-
+        this.setState({
+            ...data
+        });
     }
+
     pageMode () {
         if (this.state.loggedAs !== false && this.state.isAdmin === true)
-            return <Admin username={this.status.loggedAs}/>;
+            return <Admin username={this.status.loggedAs} userid={this.status.id}/>;
         else if (this.state.loggedAs !== false && this.state.isAdmin === false)
-            return <User username={this.status.loggedAs}/>;
+            return <User username={this.status.loggedAs} userid={this.status.id}/>;
         else if (this.state.loggedAs === false)
             return <Login />;
     }
