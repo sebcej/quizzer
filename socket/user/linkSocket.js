@@ -13,6 +13,7 @@ module.exports = async function (socket, data) {
     if (data.token === user.getToken()) {
         user.setConnection(socket).setLogged(true);
         this.session.userId = data.userId;
+
         await user.sendStatus()
         await quizzer.sendGameStatus(data.userId);
     }

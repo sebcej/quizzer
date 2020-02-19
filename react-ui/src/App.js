@@ -5,7 +5,10 @@ import Admin from "./Panels/Game/Admin";
 import User from "./Panels/Game/User";
 import Login from "./Panels/Login/Login";
 
-import {registerEvent, sendEvent, unregisterEvent} from "./tools/socket";
+import {registerEvent, unregisterEvent} from "./tools/socket";
+
+import Container from '@material-ui/core/Container';
+import Alert from '@material-ui/lab/Alert';
 
 
 export default class App extends React.Component {
@@ -15,15 +18,44 @@ export default class App extends React.Component {
         this.state = {
             id: false,
             loggedAs: false,
-            isAdmin: false
+            isAdmin: false,
+            errors: []
         }
     }
 
     componentDidMount () {
         registerEvent("userStatusUpdate", (data) => {
-            console.log("Updating status", data)
             this.userUpdate(data);
         });
+
+        registerEvent("disconnect", (data)  => {
+             console.log("Disconnected!")
+             this.showError("Disconnected")
+        })
+
+        registerEvent("error", (data)  => {
+            this.showError(data.text)
+       })
+    }
+
+    showError (errorText) {
+        let updateState = () => {
+            this.setState({
+                ...this.state,
+                errors
+            })
+        }
+
+        let errors = this.state.errors;
+
+        errors.push(errorText);
+
+        updateState();
+
+        setTimeout(() => {
+            errors.pop();
+            updateState()
+        }, 5000)
     }
 
     componentWillUnmount () {
@@ -32,6 +64,7 @@ export default class App extends React.Component {
 
     userUpdate (data) {
         this.setState({
+            ...this.state,
             ...data
         });
     }
@@ -43,15 +76,28 @@ export default class App extends React.Component {
             return <User username={this.state.loggedAs} userid={this.state.id}/>;
         else if (this.state.loggedAs === false)
             return <Login />;
+        else
+            return (<div class="text-center">Error during page load. Please retry</div>)
+    }
+
+    mainErrors () {
+        return (
+            <div>
+                {this.state.errors.map((text) => <Alert severity="error">{text}</Alert>)}
+            </div>
+        )
     }
 
     render() {
         return (
-        <div className="App">
-            <header className="App-header">
-            {this.pageMode()}
-            </header>
-        </div>
+            <div className="App">
+                <Container fixed>
+                    {this.mainErrors()}
+                    <div>
+                        {this.pageMode()}
+                    </div>
+                </Container>
+            </div>
         );;
     }
 }

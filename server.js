@@ -17,8 +17,7 @@ const fastify = require("fastify")({
 
     quizzer = require(global.paths.quizzer)(config, false);
 
-// Socket and api session manager
-
+// Socket and api plugins
 fastify.register(apiLoader, {
     root: global.paths.root,
     sourceFolder: "/api",
@@ -29,29 +28,34 @@ fastify.register(socketLoader, {
     root: global.paths.root,
     sourceFolder: "/socket",
     onInit (io) {
+        // Set broadcast connection
         quizzer.users.setConnection(io);
     },
     onMessage (action, socket) {
         /**
          * Check if token corresponds to current socket user
+         * 
+         * If not, all socket operations are disallowed
         */
 
         if (!action.user)
             return false;
         const user = quizzer.users.getUser(action.user.userId);
 
-        return user.getToken() === action.user.token;
+        return user && user.getToken() === action.user.token;
     },
     onDisconnect (socket) {
+        // Logout user as connection has dropped. If the user has reloaded the page will be reconnected by linkSocket
+
         if (this.session.userId)
             quizzer.users.getUser(this.session.userId).setLogged(false);
     }
 })
 
 fastify.register(require('fastify-static'), {
-    root: path.join(__dirname, 'react-ui/build'),
+    root: path.join(__dirname, 'react-ui/build/'),
     prefix: '/'
-})
+});
 
 // Start the party!
 fastify.listen(process.env.PORT || 8080, (err, address) => {

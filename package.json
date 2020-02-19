@@ -10,6 +10,10 @@
   },
   "author": "Seba",
   "license": "ISC",
+  "cacheDirectories": [
+    "node_modules",
+    "react-ui/node_modules"
+  ],
   "dependencies": {
     "cookie-parser": "^1.4.4",
     "dotenv": "^8.2.0",

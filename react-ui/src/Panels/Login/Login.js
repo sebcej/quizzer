@@ -2,7 +2,7 @@ import React from "react"
 import api from "../../tools/api"
 
 import LoginForm from "./LoginForm"
-import {registerEvent, sendEvent, unregisterEvent, registerUser} from "../../tools/socket";
+import {sendEvent, registerUser} from "../../tools/socket";
 
 export default class Login extends React.Component {
     componentDidMount () {

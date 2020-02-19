@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 
-import MainIcon from "../MainIcon.js";
+import MainIcon from "../MainIcon";
 
 
 const mainStyle = theme => ({
@@ -55,32 +55,32 @@ class LoginForm extends React.Component {
         <Container component="main" maxWidth="xs">
             <CssBaseline />
             <div className={classes.paper}>
-            <MainIcon className={classes.avatar}/>
-            <Typography component="h1" variant="h5">
-                Quiz like a boss
-            </Typography>
-            <form className={classes.form} noValidate onSubmit={this.handleSubmit}>
-                <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                onChange={this.handleChange}
-                id="username"
-                label="Username"
-                name="username"
-                autoFocus
-                />
-                <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                className={classes.submit}
-                >
-                Let's quiz!
-                </Button>
-            </form>
+                <MainIcon className={classes.avatar}/>
+                <Typography component="h1" variant="h5">
+                    Quiz like a boss
+                </Typography>
+                <form className={classes.form} noValidate onSubmit={this.handleSubmit}>
+                    <TextField
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
+                        onChange={this.handleChange}
+                        id="username"
+                        label="Username"
+                        name="username"
+                        autoFocus
+                    />
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        className={classes.submit}
+                    >
+                    Let's quiz!
+                    </Button>
+                </form>
             </div>
         </Container>
     );
