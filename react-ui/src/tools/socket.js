@@ -3,6 +3,8 @@ import api from "./api"
 
 const socket = io(`http://localhost:8080`);
 
+let user = false
+
 /**
  * 
  * @param {String} eventName Messagwe to be received from server
@@ -20,8 +22,11 @@ export function registerEvent (eventName, callback) {
  */
 
 export function sendEvent (eventName, data) {
+    if (!user)
+        throw new Error("NO_USER")
     socket.emit("action", {
         name: eventName,
+        user,
         data
     });
 }
@@ -33,4 +38,16 @@ export function sendEvent (eventName, data) {
  */
 export function unregisterEvent(eventName, callback) {
     return socket.off(eventName, callback)
+}
+
+/**
+ * 
+ * @param {String} token Register token for current user
+ */
+
+export function registerUser (userId, token) {
+    user = {
+        userId, 
+        token
+    }
 }

@@ -43,14 +43,22 @@ class Quizzer {
     }
 
     sendGameStatus (userId) {
-        const question = getQuestion()
+        const question = this.getQuestion()
 
-        let data = {
-            id: question.id,
-            text: question.text,
-            awaitingResponse: question.awaitingResponse,
-            awaitingApproval: question.awaitingApproval
-        }
+        let data = {}
+
+        if (question)
+            data = {
+                status: "asking",
+                id: question.id,
+                text: question.text,
+                awaitingResponse: question.awaitingResponse,
+                awaitingApproval: question.awaitingApproval
+            }
+        else 
+            data = {
+                status: "awaitingQuestion"
+            }
 
         if (userId)
             quizzer.users.getUser(userId).sendMessage("questionStatus", data);

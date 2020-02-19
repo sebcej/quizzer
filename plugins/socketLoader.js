@@ -1,17 +1,29 @@
 const fastifyPlugin = require('fastify-plugin'),
       SocketIOServer = require('socket.io'),
 	  fs = require('fs-extra'),
-	  objectPath = require('object-path'),
-	  cookie = require("cookie"),
-	  cookieSignature = require('cookie-signature');
+	  objectPath = require('object-path');
+
+
+/**
+ * Socket paths manager
+ * 
+ * 
+ * This plugin manages all socket paths from frontend. 
+ * Implements actions in object traversing approach
+ * 
+ * Files are loaded on boot and are saved in an object that is directly called when an event happens
+ */
 	  
 const configDefault = {
-	root: global.paths?global.paths.root:'',
-	socketOptions: {},
-	sourceFolder: '/socket',
-	store: true,
+	root: global.paths?global.paths.root:'', // Project root
+	socketOptions: {}, // Options to pass to socket.io
+	sourceFolder: '/socket', // Source of socket files
 
-	onConnection: null
+	// Events
+	onConnection: null,
+	onDisconnect: null,
+	onInit: null,
+	onMessage: null
 }
 
 /**
@@ -72,32 +84,6 @@ async function fastiySocketIo(fastify, options) {
   try {
 	const io = SocketIOServer(fastify.server, settings.socketOptions);
 
-	/**
-	 * Enable session store syncer
-	 * 
-	 * Check the existence of a session on fastify side and import it in current socket session
-	 * 
-	 * The session is in read-only mode
-	 */
-	if (settings.store && settings.store.api && settings.store.secret)
-		io.use((socket, next) => {
-
-			let cookieString = socket.request.headers.cookie,
-				cookieObj = cookie.parse(cookieString),
-				decryptedSessionId = cookieObj.sessionId?cookieSignature.unsign(cookieObj.sessionId, settings.store.secret):false;
-
-			if (decryptedSessionId) {
-				console.log("Recovering id: ", decryptedSessionId);
-				settings.store.api.get(decryptedSessionId, function (err, sessionObj) {
-					socket.session = sessionObj || {};
-					next()
-				})
-			} else {
-				socket.session = {}
-				next()
-			}
-		});
-
     // use io wherever you want to use socketio, just provide it in the registration context
 	fastify.decorate('io', io);
 	
@@ -110,26 +96,33 @@ async function fastiySocketIo(fastify, options) {
 	
 	io.on("connection", (socket) => {
 	  fastify.log.debug("Connected new client");
+	  let session = {}; // Shared object between alla actions
 
       socket.on("action", action => {
         const actionName = action.name,
 			  actionData = action.data;
 
+		if (settings.onMessage) {
+			let response = settings.onMessage.call({session, ...this}, action, socket);
+			if (response === false)
+				return;
+		}
+
 		let actionFunction = objectPath.get(actions, actionName);
 
 		if (actionFunction)
-			actionFunction(socket, actionData);
+			actionFunction.call({session, ...this}, socket, actionData);
 		else
 			socket.send("error", {
 				id: "ROUTE_NOT_FOUND"
 			});
 	  });
 	  
-	  settings.onConnection&&settings.onConnection(socket)
+	  settings.onConnection&&settings.onConnection.call({session, ...this}, socket)
 
 	  if (settings.onDisconnect)
 	  	socket.on("disconnect", (socket) => {
-			settings.onDisconnect(socket)
+			settings.onDisconnect.call({session, ...this}, socket)
 		})
 	});
 	

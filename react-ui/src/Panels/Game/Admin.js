@@ -4,8 +4,8 @@ import api from "../../tools/api";
 import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 
 export default class Admin extends React.Component {
-    constructor () {
-
+    constructor (props) {
+        super(props)
     }
 
     componentDidMount () {
@@ -23,7 +23,7 @@ export default class Admin extends React.Component {
     render () {
         return (
             <div>
-                Das good
+                Das admin
             </div>
         )
     }

@@ -11,8 +11,6 @@ import {registerEvent, sendEvent, unregisterEvent} from "./tools/socket";
 export default class App extends React.Component {
     constructor(props) {
         super(props)
-        
-        // Check if user is already present in localStorage
 
         this.state = {
             id: false,
@@ -40,9 +38,9 @@ export default class App extends React.Component {
 
     pageMode () {
         if (this.state.loggedAs !== false && this.state.isAdmin === true)
-            return <Admin username={this.status.loggedAs} userid={this.status.id}/>;
+            return <Admin username={this.state.loggedAs} userid={this.state.id}/>;
         else if (this.state.loggedAs !== false && this.state.isAdmin === false)
-            return <User username={this.status.loggedAs} userid={this.status.id}/>;
+            return <User username={this.state.loggedAs} userid={this.state.id}/>;
         else if (this.state.loggedAs === false)
             return <Login />;
     }

@@ -14,23 +14,10 @@ const fastify = require("fastify")({
     path = require("path"),
     apiLoader = require("./plugins/apiLoader"),
     socketLoader = require("./plugins/socketLoader"),
-    fastifySession = require('fastify-session'),
-    fastifyCookie = require('fastify-cookie'),
 
     quizzer = require(global.paths.quizzer)(config, false);
 
 // Socket and api session manager
-fastify.register(fastifyCookie);
-
-const store = new fastifySession.Store(),
-      secret = process.env.secret || "42istheanswertoeverythingintheuniverse";
-
-fastify.register(fastifySession, {
-    secret: secret,
-    store,
-    expires: 1800000,
-    cookie: { secure: false }
- });
 
 fastify.register(apiLoader, {
     root: global.paths.root,
@@ -41,24 +28,23 @@ fastify.register(apiLoader, {
 fastify.register(socketLoader, {
     root: global.paths.root,
     sourceFolder: "/socket",
-    store: {
-        api: store,
-        secret: secret
-    },
     onInit (io) {
         quizzer.users.setConnection(io);
     },
-    onConnection (socket) {
-        console.log("Connected")
+    onMessage (action, socket) {
+        /**
+         * Check if token corresponds to current socket user
+        */
 
-        if (!socket.session.userId)
-            return;
-        const user = quizzer.users.getUser(socket.session.userId)
+        if (!action.user)
+            return false;
+        const user = quizzer.users.getUser(action.user.userId);
 
-        // Set user initial state
-        user.sendStatus()
-
-        quizzer.sendGameStatus(user.getId())
+        return user.getToken() === action.user.token;
+    },
+    onDisconnect (socket) {
+        if (this.session.userId)
+            quizzer.users.getUser(this.session.userId).setLogged(false);
     }
 })
 

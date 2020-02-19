@@ -1,14 +1,20 @@
 const quizzer = require(global.paths.quizzer)();
 
-module.exports = function (socket, data) {
-    const userId = socket.session.userId;
+module.exports = async function (socket, data) {
+    if (!data.userId || !data.token)
+        return;
 
-    console.log("Connectiong session of user: ", data.userId, userId);
-    if (data.userId === userId) {
-        const user = quizzer.users.getUser(userId);
-        user.setConnection(socket);
-        quizzer.sendGameStatus(userId);
-        user.sendStatus()
+    const user = quizzer.users.getUser(data.userId)
+
+    if (!user)
+        return;
+
+    // Check if userId corresponds to user token
+    if (data.token === user.getToken()) {
+        user.setConnection(socket).setLogged(true);
+        this.session.userId = data.userId;
+        await user.sendStatus()
+        await quizzer.sendGameStatus(data.userId);
     }
-        
+     
 }

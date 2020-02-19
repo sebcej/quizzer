@@ -5,12 +5,12 @@ module.exports = {
     onRequest (req, res) {
         try {
             var user = quizzer.users.loginUser(req.body.username);
-
-            req.session.username = user.getUserName()
-            req.session.isAdmin = user.isAdmin()
-            req.session.userId = user.getId()
-
-            console.log("Fastify session", req.session.sessionId);
+            
+            res.send({
+                success: true,
+                userId: user.getId(),
+                token: user.getToken()
+            })
         } catch (e) {
             return res.send({
                 success: false,

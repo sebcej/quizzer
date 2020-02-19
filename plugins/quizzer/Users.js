@@ -1,9 +1,14 @@
-const config = require(global.paths.config);
+const config = require(global.paths.config),
+      md5 = require('md5');
 
 function cleanUserName (userName) {
     if (!userName)
         return undefined
     return userName.trim().toLowerCase()
+}
+
+function makeToken (user) {
+    return md5(`${user.id} + ${process.env.SECRET} + ${user.userName} + ${user.isAdmin}`)
 }
 
 class User {
@@ -15,6 +20,8 @@ class User {
             isAdmin: false,
             connection: false
         }
+
+        this.token = makeToken(this.user);
     }
 
     getId () {
@@ -22,11 +29,15 @@ class User {
     }
 
     getUserName () {
-        return this.user.userName
+        return this.user.userName;
     }
 
     getDetails () {
         return this.user;
+    }
+
+    getToken () {
+        return this.token
     }
 
     isLoggedIn () {
@@ -40,17 +51,17 @@ class User {
     }
 
     setAdmin (isAdmin) {
-        this.user.isAdmin = isAdmin || false
+        this.user.isAdmin = isAdmin || false;
 
         return this;
     }
 
     isAdmin () {
-        return this.user.isAdmin || false
+        return this.user.isAdmin || false;
     }
 
     setLogged (isLogged) {
-        this.user.isLogged = isLogged || false
+        this.user.isLogged = isLogged || false;
 
         return this;
     }
@@ -61,16 +72,22 @@ class User {
         return this;
     }
 
-    sendMessage (action, data) {
+    async sendMessage (action, data) {
         if (this.user.connection)
-            return this.user.connection.emit(action, data)
-        return false
+            return new Promise((s, f) => {
+                try {
+                    this.user.connection.emit(action, data, s)
+                } catch (e) {
+                    f(e)
+                }
+            });
+        return Promise.reject(false);
     }
 
-    sendStatus () {
-        return this.sendMessage("updateUserStatus", {
+    async sendStatus () {
+        return await this.sendMessage("userStatusUpdate", {
             loggedAs: this.getUserName(),
-            admin: this.isAdmin(),
+            isAdmin: this.isAdmin(),
             userId: this.getId()
         })
     }
@@ -91,11 +108,11 @@ module.exports = class Users {
 
     getUser (userId) {
         if (!userId)
-            throw new Error("NO_USERID")
+            throw new Error("NO_USERID");
 
         const user = this.users[userId - 1];
 
-        return user || false
+        return user || false;
     }
 
     getUserByName (userName) {
@@ -118,21 +135,21 @@ module.exports = class Users {
     }
 
     newUser (userName) {
-        userName = cleanUserName(userName)
+        userName = cleanUserName(userName);
 
         if (!userName)
-            throw new Error("NO_USERNAME")
+            throw new Error("NO_USERNAME");
 
         let isAdmin = this.config.adminUserName === userName;
 
         if (this.getUserByName(userName))
-            throw new Error("USER_ALREADY_PRESENT")
+            throw new Error("USER_ALREADY_PRESENT");
 
         // As we never remove users from array the id can be the array length + 1    
-        let userId = this.users.length + 1
+        let userId = this.users.length + 1;
 
-        let user = new User(userId, userName).setAdmin(isAdmin)
-        this.users.push(user)
+        let user = new User(userId, userName).setAdmin(isAdmin);
+        this.users.push(user);
 
         return user;
     }
@@ -142,7 +159,7 @@ module.exports = class Users {
 
         if (!user)
             user = this.newUser(userName);
-            
+
         if (user.isLoggedIn())
             throw new Error("USER_ALREADY_LOGGED");
 
@@ -164,9 +181,9 @@ module.exports = class Users {
 
     setConnection (socket, userId) {
         if (userId) {
-            let userObject = this.getUser(userId)
+            let userObject = this.getUser(userId);
             if (!userObject)
-                throw Error("NO_USER")
+                throw Error("NO_USER");
             userObject.setConnection(socket);
         } else {
             this.setBroadcastConnection(socket);
@@ -183,12 +200,20 @@ module.exports = class Users {
             throw new Error("NO_USER")
 
         if (this.bannedUsers.indexOf(userId) < 0)
-            this.bannedUsers.push(userId)
+            this.bannedUsers.push(userId);
         
         return this;
     }
 
-    sendMessage (action) {
-        return this.connection.broadcast(action, data)
+    async sendMessage (action) {
+        if (this.user.connection)
+            return new Promise((s, f) => {
+                try {
+                    this.user.connection.broadcast(action, data, s)
+                } catch (e) {
+                    f(e)
+                }
+            });
+        return Promise.reject(false)
     }
 }
