@@ -1,5 +1,4 @@
-const config = require(global.paths.config),
-      md5 = require('md5');
+const md5 = require('md5');
 
 function cleanUserName (userName) {
     if (!userName)
