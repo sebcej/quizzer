@@ -58,6 +58,7 @@ fastify.register(require('fastify-static'), {
 });
 
 // Start the party!
+console.log("Connecting to: ", process.env.PORT)
 fastify.listen(process.env.PORT || 8080, (err, address) => {
     if (err) 
         throw err
