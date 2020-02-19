@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "mocha --recursive",
-    "qa": "mocha --recursive --watch"
+    "qa": "mocha --recursive --watch",
+    "build": "cd react-ui/ && npm install && npm run build"
   },
   "author": "Seba",
   "license": "ISC",
