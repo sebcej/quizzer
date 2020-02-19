@@ -102,18 +102,36 @@ module.exports = class Users {
     }
 
     banUser (userId) {
-        const user = this.users.getUser(userId);
+        const user = this.getUser(userId);
+
+        if (!user)
+            throw new Error("NO_USER");
+
         user.setBanned(true);
 
         return this;
     }
 
     unbanUsers () {
-        for (let user in this.users) {
-            this.users[user].setBanned(false)
+        const usersLength = this.users.length;
+        for (let userId = 0; userId < usersLength; userId ++) {
+            if (this.users[userId])
+                this.users[userId].setBanned(false);
         }
 
         return this;
+    }
+
+    getBannedUsersList () {
+        const usersLength = this.users.length;
+        let bannedList = [];
+        for (let userId = 0; userId < usersLength; userId ++) {
+            let user = this.users[userId];
+            if (user && user.isBanned())
+                bannedList.push(user.getId())
+        }
+
+        return bannedList;
     }
 
     async sendMessage (action) {

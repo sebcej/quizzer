@@ -33,7 +33,9 @@ describe("plugins", () => {
             // Stub filesystem apis
             sinon.replace(fs, "readdir", sinon.fake.returns([]))
 
-            let apiSession = await apiLoader(fastifyStub, {});
+            let apiSession = await apiLoader(fastifyStub, {
+                root: ""
+            });
 
             chai.expect(fastifyStub.get.called).to.equal(false)
             chai.expect(fastifyStub.post.called).to.equal(false)
@@ -56,7 +58,9 @@ describe("plugins", () => {
                 isFile: statIsFileFake
             }));
 
-            let apiSession = await apiLoader(fastifyStub, {});
+            let apiSession = await apiLoader(fastifyStub, {
+                root: ""
+            });
 
             chai.expect(fastifyStub.get.called).to.equal(false)
             chai.expect(fastifyStub.post.called).to.equal(true)

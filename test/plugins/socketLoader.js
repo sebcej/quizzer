@@ -43,7 +43,9 @@ describe("plugins", () => {
             // Stub filesystem apis
             sinon.replace(fs, "readdir", sinon.fake.returns([]))
 
-            let apiSession = await socketLoader(fastifyStub, {});
+            let apiSession = await socketLoader(fastifyStub, {
+                root: ""
+            });
 
             chai.expect(fs.readdir.called).to.equal(true);
         })
@@ -63,7 +65,9 @@ describe("plugins", () => {
                 isFile: statIsFileFake
             }));
 
-            let apiSession = await socketLoader(fastifyStub, {});
+            let apiSession = await socketLoader(fastifyStub, {
+                root: ""
+            });
 
             chai.expect(actionsStack.connection).to.not.be.undefined;
 
@@ -94,7 +98,9 @@ describe("plugins", () => {
                 isFile: statIsFileFake
             }));
 
-            let apiSession = await socketLoader(fastifyStub, {});
+            let apiSession = await socketLoader(fastifyStub, {
+                root: ""
+            });
 
             chai.expect(actionsStack.connection).to.not.be.undefined;
             actionsStack.connection(socketLoaderStub["socket.io"]());
@@ -126,7 +132,9 @@ describe("plugins", () => {
                 isFile: statIsFileFake
             }));
 
-            let apiSession = await socketLoader(fastifyStub, {});
+            let apiSession = await socketLoader(fastifyStub, {
+                root: ""
+            });
 
             chai.expect(actionsStack.connection).to.not.be.undefined;
             actionsStack.connection(socketLoaderStub["socket.io"]());

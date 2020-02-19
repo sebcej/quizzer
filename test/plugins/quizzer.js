@@ -1,11 +1,19 @@
 const apiPath = "../../plugins/quizzer/Quizzer";
 
+global.paths = {
+    config: "config_path"
+}
+
 const proxyquire = require("proxyquire").noCallThru(),
       chai = require("chai"),
       sinon = require("sinon")
       
       config = require("../../config.json"),
-      quizzer = require(apiPath);
+      quizzer = proxyquire(apiPath, {
+          "config_path": {
+            
+          }
+      });
 
 describe("plugins", () => {
     let quizzerInstance = null,
