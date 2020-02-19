@@ -1,95 +1,9 @@
-const md5 = require('md5');
+const User = require("./User");
 
 function cleanUserName (userName) {
     if (!userName)
         return undefined
     return userName.trim().toLowerCase()
-}
-
-function makeToken (user) {
-    return md5(`${user.id} + ${process.env.SECRET} + ${user.userName} + ${user.isAdmin}`)
-}
-
-class User {
-    constructor (id, userName) {
-        this.user = {
-            id,
-            userName,
-            isLogged: false,
-            isAdmin: false,
-            connection: false
-        }
-
-        this.token = makeToken(this.user);
-    }
-
-    getId () {
-        return this.user.id;
-    }
-
-    getUserName () {
-        return this.user.userName;
-    }
-
-    getDetails () {
-        return this.user;
-    }
-
-    getToken () {
-        return this.token
-    }
-
-    isLoggedIn () {
-        return this.user.isLogged || false;
-    }
-
-    setLoggedIn (isLoggedIn) {
-        this.user.isLogged = isLoggedIn;
-
-        return this
-    }
-
-    setAdmin (isAdmin) {
-        this.user.isAdmin = isAdmin || false;
-
-        return this;
-    }
-
-    isAdmin () {
-        return this.user.isAdmin || false;
-    }
-
-    setLogged (isLogged) {
-        this.user.isLogged = isLogged || false;
-
-        return this;
-    }
-
-    setConnection (connection) {
-        this.user.connection = connection;
-
-        return this;
-    }
-
-    async sendMessage (action, data) {
-        if (this.user.connection)
-            return new Promise((s, f) => {
-                try {
-                    this.user.connection.emit(action, data, s)
-                } catch (e) {
-                    f(e)
-                }
-            });
-        return Promise.reject(false);
-    }
-
-    async sendStatus () {
-        return await this.sendMessage("userStatusUpdate", {
-            loggedAs: this.getUserName(),
-            isAdmin: this.isAdmin(),
-            userId: this.getId()
-        })
-    }
 }
 
 module.exports = class Users {
@@ -127,10 +41,6 @@ module.exports = class Users {
         }
 
         return userInstance;
-    }
-
-    getBannedUsersList () {
-        return this.bannedUsers;
     }
 
     newUser (userName) {
@@ -192,15 +102,17 @@ module.exports = class Users {
     }
 
     banUser (userId) {
-        if (!userId)
-            throw new Error("NO_USERID")
+        const user = this.users.getUser(userId);
+        user.setBanned(true);
 
-        if (!this.getUser(userId))
-            throw new Error("NO_USER")
+        return this;
+    }
 
-        if (this.bannedUsers.indexOf(userId) < 0)
-            this.bannedUsers.push(userId);
-        
+    unbanUsers () {
+        for (let user in this.users) {
+            this.users[user].setBanned(false)
+        }
+
         return this;
     }
 

@@ -42,7 +42,7 @@ fastify.register(socketLoader, {
             return false;
         const user = quizzer.users.getUser(action.user.userId);
 
-        return user && user.getToken() === action.user.token;
+        return user && user.areTokensEqual(action.user.token) && user.checkToken(action.user.userId)
     },
     onDisconnect (socket) {
         // Logout user as connection has dropped. If the user has reloaded the page will be reconnected by linkSocket
