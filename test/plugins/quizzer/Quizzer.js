@@ -144,7 +144,9 @@ describe("plugins", () => {
                     timers.next()
                 }
 
-                chai.expect(broadcastedMessages).to.be.lengthOf(8); // Sent block message to all users
+                console.log(broadcastedMessages)
+
+                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.respond + 3); // Sent block message to all users
                 chai.expect(sentMessages).to.be.lengthOf(1); // Sent reservation confirmation to the lucky user
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "USER_FAILED");
