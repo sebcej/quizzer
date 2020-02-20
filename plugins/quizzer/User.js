@@ -12,6 +12,7 @@ module.exports = class User {
             isLogged: false,
             isAdmin: false,
             isBanned: false,
+            points: 0,
             connection: false
         }
 
@@ -33,6 +34,10 @@ module.exports = class User {
 
     getToken () {
         return this.token;
+    }
+
+    getPoints () {
+        return this.user.points;
     }
 
     areTokensEqual (token) {
@@ -73,6 +78,18 @@ module.exports = class User {
         return this;
     }
 
+    setPoints (number) {
+        this.user.points = number || 0;
+
+        return this;
+    }
+
+    increasePoints (number) {
+        this.user.points += number || 1;
+
+        return this;
+    }
+
     checkToken (userId) {
         return makeToken(userId, this.user) === this.token
     }
@@ -93,7 +110,7 @@ module.exports = class User {
                     f(e)
                 }
             });
-        return Promise.reject(false);
+        throw Error("NO_CONNECTION")
     }
 
     async sendStatus () {

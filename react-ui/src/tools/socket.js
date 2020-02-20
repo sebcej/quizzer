@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import api from "./api"
 
-const socket = io(`http://localhost:8080`);
+const socket = io(`//${window.location.host}/`);
 
 let user = false
 

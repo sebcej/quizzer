@@ -3,6 +3,7 @@
     "pointsToWin": 5,
     "timeouts": {
         "question": 30,
+        "questionAfterFailure": 10,
         "respond": 5
     }
 }

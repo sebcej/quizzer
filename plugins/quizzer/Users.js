@@ -112,7 +112,7 @@ module.exports = class Users {
         return this;
     }
 
-    unbanUsers () {
+    unbanAll () {
         const usersLength = this.users.length;
         for (let userId = 0; userId < usersLength; userId ++) {
             if (this.users[userId])
@@ -122,11 +122,21 @@ module.exports = class Users {
         return this;
     }
 
+    resetAllPoints () {
+        const usersLength = this.users.length;
+        for (let userId = 0; userId < usersLength; userId ++) {
+            if (this.users[userId])
+                this.users[userId].setPoints(0);
+        }
+
+        return this;
+    }
+
     getBannedUsersList () {
         const usersLength = this.users.length;
         let bannedList = [];
-        for (let userId = 0; userId < usersLength; userId ++) {
-            let user = this.users[userId];
+        for (let userIndex = 0; userIndex < usersLength; userIndex ++) {
+            let user = this.users[userIndex];
             if (user && user.isBanned())
                 bannedList.push(user.getId())
         }
@@ -134,11 +144,24 @@ module.exports = class Users {
         return bannedList;
     }
 
-    async sendMessage (action) {
-        if (this.user.connection)
+    getUsersPointsList () {
+        const usersLength = this.users.length;
+        let usersPoints = {};
+        for (let userIndex = 0; userIndex < usersLength; userIndex ++) {
+            let user = this.users[userIndex],
+                points = user.getPoints();
+            if (user && points > 0)
+                usersPoints[user.getId()] = points;
+        }
+
+        return usersPoints;
+    }
+
+    async sendMessage (action, data) {
+        if (this.connection)
             return new Promise((s, f) => {
                 try {
-                    this.user.connection.broadcast(action, data, s)
+                    this.connection.broadcast(action, data, s)
                 } catch (e) {
                     f(e)
                 }

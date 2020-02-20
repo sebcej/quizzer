@@ -1,4 +1,4 @@
-const apiPath = "../../plugins/quizzer/Quizzer";
+const apiPath = "../../../plugins/quizzer/Quizzer";
 
 global.paths = {
     config: "config_path"
@@ -8,7 +8,7 @@ const proxyquire = require("proxyquire").noCallThru(),
       chai = require("chai"),
       sinon = require("sinon")
       
-      config = require("../../config.json"),
+      config = require("../../../config.json"),
       quizzer = proxyquire(apiPath, {
           "config_path": {
             
@@ -41,7 +41,7 @@ describe("plugins", () => {
         })
     })
 
-    context("@quizzer", () => {
+    context("@quizzer-User", () => {
         context("login()", () => {
             it("Should login user and return it", () => {
                 let response = quizzerInstance.users.loginUser("tester"),
@@ -106,35 +106,5 @@ describe("plugins", () => {
                 chai.expect(quizzerInstance.users.getBannedUsersList()).to.be.an('array').that.does.include(userId)
             })
         })
-
-        /*context("broadcastQuestion()", () => {
-            it("Should send message to user directly by client side validation", () => {
-                quizzerInstance.loginUser("tester");
-
-                quizzerInstance.broadcastQuestion(false, "tester");
-
-                chai.expect(broadcastedMessages).to.include({
-                    event: "questionStatus",
-                    data: {
-
-                    }
-                })
-            })
-
-            it("Should send message to user directly by server side direct connection", () => {
-                quizzerInstance.loginUser("tester");
-
-                quizzerInstance.broadcastQuestion("tester", {
-                    test: true
-                });
-
-                chai.expect(sentMessages).to.include({
-                    event: "questionStatus",
-                    data: {
-                        test: true
-                    }
-                })
-            })
-        });*/
     })
 })
