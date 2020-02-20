@@ -1,0 +1,44 @@
+.waitingQuestion {
+    text-align: center;
+    font-style: italic;
+}
+
+.pointsCounter {
+    $size: 80px;
+    margin: 20px auto;
+    font-size: 24px!important;
+    text-align: center;
+
+    width: $size;
+    height: $size;
+    line-height: $size;
+
+    border-radius: 40px;
+
+    -webkit-box-shadow: inset 0px 0px 37px 2px rgba(242,184,128,1);
+    -moz-box-shadow: inset 0px 0px 37px 2px rgba(242,184,128,1);
+    box-shadow: inset 0px 0px 37px 2px rgba(242,184,128,1);
+}
+
+.magicQuestionContainer {
+    p.questionNumber {
+        margin-top:0;
+        padding-bottom: 10px;
+        font-style: italic;
+    }
+
+    .questionText {
+        padding-bottom: 10px;
+    }
+
+    .magicSubmitContainer {
+        padding-top: 40px;
+        text-align: center;
+    
+        .magicSubmit {
+            width: 100px;
+            height: 100px;
+            border-radius: 100px;
+        }
+    }
+}

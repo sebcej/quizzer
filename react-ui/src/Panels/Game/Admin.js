@@ -6,7 +6,7 @@ import Button from '@material-ui/core/Button';
 
 import { withStyles } from '@material-ui/core/styles';
 
-import MainIcon from "../MainIcon"
+import Header from "../Header"
 
 import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 
@@ -46,6 +46,7 @@ class Admin extends React.Component {
 
     insertQuestion (e) {
         e.preventDefault();
+        console.log("Inserting question")
         sendEvent("admin.insertQuestion", {
             question: this.state.question
         });
@@ -82,7 +83,7 @@ class Admin extends React.Component {
         return (
             <div>
                 <header>
-                    <MainIcon small/>
+                    <Header small/>
                 </header>
                 {this.questionEditor()}
             </div>

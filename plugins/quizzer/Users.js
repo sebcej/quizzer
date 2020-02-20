@@ -157,15 +157,9 @@ module.exports = class Users {
         return usersPoints;
     }
 
-    async sendMessage (action, data) {
+    sendMessage (action, data) {
         if (this.connection)
-            return new Promise((s, f) => {
-                try {
-                    this.connection.broadcast(action, data, s)
-                } catch (e) {
-                    f(e)
-                }
-            });
-        return Promise.reject(false)
+            return this.connection.sockets.emit(action, data);
+        throw new Error("NO_BROADCAST_CONNECTION");
     }
 }

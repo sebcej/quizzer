@@ -20,12 +20,13 @@ describe("plugins", () => {
                 })
                 callback()
             },
-            broadcast: function (event, data, callback) {
-                broadcastedMessages.push({
-                    event, 
-                    data
-                })
-                callback()
+            sockets: {
+                emit: function (event, data) {
+                    broadcastedMessages.push({
+                        event, 
+                        data
+                    })
+                }
             }
         }
 

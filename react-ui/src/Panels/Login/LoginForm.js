@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 
-import MainIcon from "../MainIcon";
+import Header from "../Header";
 
 
 const mainStyle = theme => ({
@@ -55,8 +55,11 @@ class LoginForm extends React.Component {
         <Container component="main" maxWidth="xs">
             <CssBaseline />
             <div className={classes.paper}>
-                <MainIcon className={classes.avatar}/>
-                <Typography component="h1" variant="h5">
+                <Header className={classes.avatar}/>
+                <Typography component="h1" variant="h4">
+                    Quizzer
+                </Typography>
+                <Typography component="h2" variant="h6">
                     Quiz like a boss
                 </Typography>
                 <form className={classes.form} noValidate onSubmit={this.handleSubmit}>

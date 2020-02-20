@@ -59,6 +59,9 @@ class Quizzer {
         // Case when user has waited too much or has failed the response
         // The user is banned and the question restarts with new timer
         if (questionText !== false && adminId !== false) {
+            if (this.status.gameStatus.step === gameStatus.ASKING)
+                throw new Error("DUPLICATE_REQUEST")
+
             const admin = this.users.getUser(adminId);
 
             if (!admin.isAdmin())
@@ -126,11 +129,13 @@ class Quizzer {
 
         clearInterval(this.status.intervals.asking);
 
+
         this.status.gameStatus.timer = this.config.timeouts.respond;
         this.status.gameStatus.step = gameStatus.RESERVED;
-        await user.sendMessage("reservationAccepted", {
+        user.sendMessage("reservationAccepted", {
             questionId
         });
+        
         this.sendGameStatus()
 
         this.status.intervals.responding = setInterval(() => {
@@ -299,6 +304,7 @@ class Quizzer {
         data = {
             step: this.status.gameStatus.step,
             reservedUser: userObj,
+            bannedUsers: this.users.getBannedUsersList(),
             points: this.users.getUsersPointsList(),
             ...question,
             timer: this.status.gameStatus.timer

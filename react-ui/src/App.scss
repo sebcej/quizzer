@@ -2,8 +2,8 @@
     text-align: center;
     margin: 0px auto;
     width: 50vw;
-    max-width: 250px;
-    padding: 20px;
+    max-width: 200px;
+    padding: 30px;
 
     img {
         width: 100%;
@@ -12,4 +12,9 @@
     &.small img {
         max-width: 30px;
     }
+}
+
+#connectionError {
+    text-align: center;
+    padding: 30px;
 }

@@ -1,8 +1,8 @@
 const quizzer = require(`${global.paths.quizzer}`)();
 
-module.exports = function (socket, data) {
+module.exports = async function (socket, data) {
     try {
-        quizzer.reserveResponse(socket.session.userId, data.question);
+        await quizzer.reserveResponse(data.questionId, this.session.userId);
     } catch (e) {
         return socket.emit("error-question", {
             success: false,

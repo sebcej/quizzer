@@ -9,6 +9,7 @@ import {registerEvent, unregisterEvent} from "./tools/socket";
 
 import Container from '@material-ui/core/Container';
 import Alert from '@material-ui/lab/Alert';
+import WarningIcon from '@material-ui/icons/Warning';
 
 
 export default class App extends React.Component {
@@ -19,6 +20,7 @@ export default class App extends React.Component {
             id: false,
             loggedAs: false,
             isAdmin: false,
+            connectionError: false,
             errors: []
         }
     }
@@ -29,8 +31,24 @@ export default class App extends React.Component {
         });
 
         registerEvent("disconnect", (data)  => {
-             console.log("Disconnected!")
-             this.showError("Disconnected")
+            this.setState({
+                ...this.state,
+                connectionError: true
+            })
+        });
+
+        registerEvent("connect", (data)  => {
+            this.setState({
+                ...this.state,
+                connectionError: false
+            })
+        });
+
+        registerEvent("connect_error", () => {
+            this.setState({
+                ...this.state,
+                connectionError: true
+            })
         })
 
         registerEvent("error", (data)  => {
@@ -60,6 +78,9 @@ export default class App extends React.Component {
 
     componentWillUnmount () {
         unregisterEvent("userStatusUpdate", this.userUpdate);
+        unregisterEvent("disconnect");
+        unregisterEvent("connect");
+        unregisterEvent("connect_error");
     }
 
     userUpdate (data) {
@@ -87,16 +108,34 @@ export default class App extends React.Component {
             </div>
         )
     }
+    
+    noConnection () {
+        return (
+            <div id="connectionError">
+                <WarningIcon style={{ fontSize: 100, color: "red" }}/>
+                <div>
+                    <b>Connection error</b>
+                    <p>Reload page or check connection</p>
+                </div>
+            </div>
+        )
+    }
+
+    mainPage () {
+        return (
+            <Container fixed>
+                {this.mainErrors()}
+                <div>
+                    {this.pageMode()}
+                </div>
+            </Container>
+        )
+    }
 
     render() {
         return (
             <div className="App">
-                <Container fixed>
-                    {this.mainErrors()}
-                    <div>
-                        {this.pageMode()}
-                    </div>
-                </Container>
+                {this.state.connectionError?this.noConnection():this.mainPage()}
             </div>
         );;
     }

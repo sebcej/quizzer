@@ -4,6 +4,6 @@
     "timeouts": {
         "question": 30,
         "questionAfterFailure": 10,
-        "respond": 5
+        "respond": 10
     }
 }

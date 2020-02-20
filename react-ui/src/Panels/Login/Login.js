@@ -28,8 +28,6 @@ export default class Login extends React.Component {
             username: user
         });
 
-        console.log(this.linkSocket)
-
         if (data.success) {
             registerUser(data.userId, data.token)
             sendEvent("user.linkSocket", {
