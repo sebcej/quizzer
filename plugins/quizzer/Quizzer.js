@@ -50,16 +50,16 @@ class Quizzer {
     /**
      * First step of game. The administrator asks a question to all users.
      * 
-     * @param {Number} userId Id of admin user
+     * @param {Number} adminId Id of admin user
      * @param {String} questionText Text of question that will be asked to all available users
      */
 
-    async insertQuestion (userId, questionText) {
+    async insertQuestion (adminId, questionText) {
 
         // Case when user has waited too much or has failed the response
         // The user is banned and the question restarts with new timer
-        if (questionText !== false && userId !== false) {
-            const admin = this.users.getUser(userId);
+        if (questionText !== false && adminId !== false) {
+            const admin = this.users.getUser(adminId);
 
             if (!admin.isAdmin())
                 throw new Error("NO_ADMIN")
