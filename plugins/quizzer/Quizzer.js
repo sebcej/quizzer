@@ -331,6 +331,7 @@ class Quizzer {
             reservedUser: userObj,
             bannedUsers: this.users.getBannedUsersList(),
             points: this.users.getUsersPointsList(),
+            loggedInUsers: this.users.getLoggedUsersList(),
             maxPoints: this.config.pointsToWin,
             ...question,
             timer: this.status.gameStatus.timer

@@ -108,6 +108,18 @@ describe("plugins", () => {
             });
         });
 
+        context("getLoggedUsersList()", () => {
+            it("Should get one user  as is the only logged in", () => {
+                const user = quizzerInstance.users.loginUser("tester"),
+                user2 = quizzerInstance.users.loginUser("tester2");
+
+                user.setLoggedIn(true);
+                user2.setLoggedIn(false);
+
+                chai.expect(quizzerInstance.users.getLoggedUsersList()).to.be.lengthOf(1)
+            })
+        })
+
         context("reserveResponse()", () => {
             it("Should allow reservation and notify all partecipants", async () => {
                 let {user, user2, text} = await prepare();

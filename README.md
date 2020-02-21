@@ -9,6 +9,12 @@ The master repository is directly linked to heroku app for automatic deployment 
 
 See it in action [here](https://quizzer-testing.herokuapp.com/)
 
+## Game Instructions
+
+The game allows a group of users to respond to an admin/master questions. The master can enter to the control panel by logging in as admin account. The master types on the field and sends the question. All the other users will receive it and can book the answer. The response will then be forwarded to the master that will review it.
+
+All steps are timed. When timeout occurs the question will be discarded or the user banned.
+
 ## Server Management
 
 ``` bash

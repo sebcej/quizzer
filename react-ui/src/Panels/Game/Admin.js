@@ -197,7 +197,14 @@ class Admin extends React.Component {
         if (gameStatus)
             return (
                 <Paper className={classes.paper}>
-                    <h3>Situation:</h3>
+                    <Grid container spacing={3}>
+                        <Grid item xs={12} md={6}>
+                            <h3>Situation:</h3>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <h4 style={{textAlign: "right"}}>Connected: {gameStatus.loggedInUsers.length}</h4>
+                        </Grid>
+                    </Grid>
                     <hr/>
                     <Grid container spacing={3}>
                         <Grid item xs={12} md={3}>

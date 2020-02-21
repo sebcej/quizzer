@@ -63,6 +63,12 @@ module.exports = class Users {
         return user;
     }
 
+    /**
+     * Login user. If not present create one from scratch
+     * 
+     * @param {String} userName Username to login/create
+     */
+
     loginUser (userName) {
         let user = this.getUserByName(userName);
 
@@ -156,6 +162,27 @@ module.exports = class Users {
 
         return usersPoints;
     }
+
+    getLoggedUsersList () {
+        const usersLength = this.users.length;
+        let loggedUsers = [];
+        for (let userIndex = 0; userIndex < usersLength; userIndex ++) {
+            let user = this.users[userIndex],
+                logged = user.isLoggedIn();
+            if (user && logged)
+                loggedUsers.push(user.getUserName())
+        }
+
+        return loggedUsers;
+    }
+
+    /**
+     * 
+     * Send message to ALL connected users
+     * 
+     * @param {String} action Action to perform
+     * @param {Object} data Object to send
+     */
 
     sendMessage (action, data) {
         if (this.connection)
