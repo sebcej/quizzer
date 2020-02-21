@@ -26,6 +26,8 @@ class Quizzer {
 
         this.users = new Users(config)
 
+        this.users.attachEvent("login", () => this.sendGameStatus());
+
         this.status = {
             questions: [],
             adminRecover: false,

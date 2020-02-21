@@ -13,6 +13,8 @@ module.exports = class Users {
 
         this.users = []
         this.bannedUsers = []
+
+        this.events = {}
     }
 
     getAll () {
@@ -79,6 +81,8 @@ module.exports = class Users {
             throw new Error("USER_ALREADY_LOGGED");
 
         user.setLoggedIn(true);
+
+        this.events["login"]&&this.events["login"](user);
 
         return user
     }
@@ -174,6 +178,12 @@ module.exports = class Users {
         }
 
         return loggedUsers;
+    }
+
+    attachEvent (eventName, callback) {
+        this.events[eventName] = callback;
+
+        return this;
     }
 
     /**

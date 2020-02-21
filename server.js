@@ -51,6 +51,8 @@ fastify.register(socketLoader, {
 
         if (this.session.userId)
             quizzer.users.getUser(this.session.userId).setLogged(false);
+
+        quizzer.sendGameStatus();
     }
 })
 
