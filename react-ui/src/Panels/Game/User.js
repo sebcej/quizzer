@@ -7,6 +7,16 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
 
+import StarIcon from '@material-ui/icons/Star';
+import StarBorderIcon from '@material-ui/icons/StarBorder';
+import QuestionAnswerIcon from '@material-ui/icons/QuestionAnswer';
+import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
+import ClearIcon from '@material-ui/icons/Clear';
+import AlarmIcon from '@material-ui/icons/Alarm';
+import CheckIcon from '@material-ui/icons/Check';
+
 import { withStyles } from '@material-ui/core/styles';
 
 import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
@@ -18,6 +28,21 @@ const mainStyle = theme => ({
         padding: theme.spacing(3),
         "background-color": "#A9E5E0",
         "text-align": "center"
+    },
+    paperSuccess: {
+        padding: theme.spacing(3),
+        "background-color": "#DDEDAA",
+        "text-align": "center"
+    },
+    paperWarn: {
+        padding: theme.spacing(3),
+        "background-color": "#FFD1BA",
+        "text-align": "center"
+    },
+    paperError: {
+        padding: theme.spacing(3),
+        "background-color": "#BF7085",
+        "text-align": "center"
     }
 });
 
@@ -28,12 +53,15 @@ class User extends React.Component {
         this.state = {
             question: false,
             reservedByMe: false,
+            banned: false,
             response: ""
         }
 
         this.questionStatus = this.questionStatus.bind(this);
         this.reservationAccepted = this.reservationAccepted.bind(this);
-        this.getQuestion = this.getQuestion.bind(this);
+        this.reserveResponse = this.reserveResponse.bind(this);
+        this.respondQuestion = this.respondQuestion.bind(this);
+        this.getStars = this.getStars.bind(this);
     }
 
     componentDidMount () {
@@ -47,10 +75,22 @@ class User extends React.Component {
     }
 
     questionStatus (data) {
-        console.log("Question received", data);
+        console.log("Question data", data);
+        let banned = false,
+            reserved = this.state.reservedByMe;
+
+        // Ban user when the answer is not provided or is wrong
+        if (data.bannedUsers && data.bannedUsers.indexOf(parseInt(this.props.userId)) >= 0)
+            banned = true;
+        
+        if (data.step === "WAITING_QUESTION")
+            reserved = false;
+
         this.setState({
             ...this.state,
-            question: data
+            question: data,
+            banned,
+            reservedByMe: reserved
         })
     }
 
@@ -62,9 +102,16 @@ class User extends React.Component {
             });
     }
 
-    getQuestion () {
+    reserveResponse () {
         sendEvent("user.reserveResponse", {
             questionId: this.state.question.id
+        })
+    }
+
+    respondQuestion () {
+        sendEvent("user.sendResponseToAdmin", {
+            questionId: this.state.question.id,
+            question: this.state.response
         })
     }
 
@@ -80,32 +127,91 @@ class User extends React.Component {
                 if (this.state.reservedByMe === true)
                     return (this.stepAsking(true))
                 else
-                    return (this.stepReserved())
+                    return (this.genericTemplate({
+                        paperClass: "paperWarn",
+                        icon: <HourglassEmptyIcon/>,
+                        title: `Response reserved by ${this.state.question.reservedUser.userName}`
+                    }))
+            case "WAIT_CONFIRM": 
+                return (this.genericTemplate({
+                    paperClass: "paper",
+                    icon: <VisibilityIcon/>,
+                    title: `The master is watching the answer`
+                }))
+            case "QUESTION_FAILED": 
+                return (this.genericTemplate({
+                    paperClass: "paperError",
+                    icon: <AlarmIcon/>,
+                    title: `No response from anyone`,
+                    subtitle: "Was the question too hard?"
+                }))
+            case "GAME_FINISH": 
+                return (this.genericTemplate({
+                    paperClass: "paperSuccess",
+                    icon: <AttachMoneyIcon/>,
+                    title: `AND THE WINNER IS: ${this.state.question.reservedUser.userName}`
+                }))
+            case "USER_FAILED": 
+                return (this.genericTemplate({
+                    paperClass: "paperError",
+                    icon: <HourglassEmptyIcon/>,
+                    title: "No response from you",
+                    subtitle: this.state.reservedByMe?"You are banned from this round":""
+                }))
+            case "QUESTION_RESPONSE_FAILED":
+                return (this.genericTemplate({
+                    paperClass: "paperError",
+                    icon: <ClearIcon/>,
+                    title: "Response not accepted",
+                    subtitle: this.state.reservedByMe?"You are banned from this round":""
+                }))
+            case "QUESTION_RESPONSE_SUCCESS":
+                return (this.genericTemplate({
+                    paperClass: "paperSuccess",
+                    icon: <CheckIcon/>,
+                    title: "Response accepted",
+                    subtitle: this.state.reservedByMe?"Well done!":""
+                }))
         }
     }
 
-    stepReserved () {
+    genericTemplate ({
+        paperClass,
+        icon,
+        title,
+        subtitle
+    }) {
         let classes = this.props.classes;
 
         return (
             <div>
-                <div className="pointsCounter">
-                    {this.state.question?(this.state.question.points[this.props.userId] || 0):0}
-                </div>
-                <Paper className={classes.paper}>
+                <Paper className={classes[paperClass]}>
                     <div className="waitingQuestion">
-                        <Typography component="h1" variant="h4">
-                            Response reserved by {this.state.question.userName}
+                        {icon}
+                        <Typography component="h1" variant="h5">
+                            {title}
+                        </Typography>
+                        <p>{subtitle}</p>
+                    </div>
+                </Paper>
+            </div>
+        );
+    }
+
+    questionFailed () {
+        let classes = this.props.classes;
+
+        return (
+            <div>
+                <Paper className={classes.paperWarn}>
+                    <div className="waitingQuestion">
+                        <HourglassEmptyIcon/>
+                        <Typography component="h1" variant="h5">
+                            Response reserved by {this.state.question.reservedUser.userName}
                         </Typography>
                     </div>
                 </Paper>
             </div>
-        )
-    }
-
-    stepReserved () {
-        return (
-            "Test"
         )
     }
 
@@ -114,11 +220,9 @@ class User extends React.Component {
         
         return (
             <div>
-                <div className="pointsCounter">
-                    {this.state.question?(this.state.question.points[this.props.userId] || 0):0}
-                </div>
                 <Paper className={classes.paper}>
                     <div className="waitingQuestion">
+                        <QuestionAnswerIcon/>
                         <Typography component="h1" variant="h4">
                             Waiting for a question
                         </Typography>
@@ -133,13 +237,29 @@ class User extends React.Component {
         let classes = this.props.classes;
 
         const fieldArea = (
-            <TextField 
-                id="standard-basic" 
-                label="Enter response"
-                multiline
-                onChange={event => this.setState({...this.state, response: event.target.value})}
-                rows="4"
-            />
+            <div>
+                <FormControl fullWidth className={classes.margin} variant="filled">
+                    <TextField 
+                        id="standard-basic" 
+                        label="Enter response"
+                        multiline
+                        onChange={event => this.setState({...this.state, response: event.target.value})}
+                        rows="4"
+                    />
+                </FormControl>
+                <div className="magicSubmitContainer">
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="secondary"
+                        className="magicSubmit"
+                        onClick={this.respondQuestion}
+                    >
+                        <div>REPLY!</div>
+                        {this.state.question.timer}
+                    </Button>
+                </div>
+            </div>
         )
 
         const getItArea = (
@@ -149,18 +269,17 @@ class User extends React.Component {
                     variant="contained"
                     color="primary"
                     className="magicSubmit"
-                    onClick={this.getQuestion}
+                    disabled={this.state.banned}
+                    onClick={this.reserveResponse}
                 >
-                    GET IT!
+                    <div>GET IT!</div>
+                    {this.state.question.timer}
                 </Button>
             </div>
         )
         
         return (
             <div className="magicQuestionContainer">
-                <div>
-                    {this.state.question.timer}
-                </div>
                 <Paper className={classes.paper}>
                     <p className="questionNumber">Question n. {this.state.question.id + 1}</p>
                     <Typography component="h1" variant="h5" className="questionText">
@@ -174,6 +293,23 @@ class User extends React.Component {
         )
     }
 
+    getStars () {
+        let stars = []
+        const points = this.state.question?(this.state.question.points[this.props.userId] || 0):0;
+
+        if (!this.state.question.maxPoints)
+            return;
+
+        for (let i = 0; i < this.state.question.maxPoints; i++) {
+            if (points <= i)
+                stars.push(<StarBorderIcon key={i} style={{ fontSize: 30, color: "orange" }}/>);
+            else
+                stars.push(<StarIcon key={i} style={{ fontSize: 30, color: "orange" }}/>);
+        }
+
+        return stars;
+    }
+
 
     render () {
         let classes = this.props.classes;
@@ -183,6 +319,9 @@ class User extends React.Component {
                 <header>
                     <Header small/>
                 </header>
+                <div className="text-center">
+                    {this.getStars()}
+                </div>
                 <div>
                     {this.viewsRouter()}
                 </div>

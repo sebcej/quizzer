@@ -67,6 +67,9 @@ class Quizzer {
             if (!admin.isAdmin())
                 throw new Error("NO_ADMIN")
 
+            if (questionText === "")
+                throw new Error("NO_TEXT")
+
             this.users.unbanAll();
             this.status.gameStatus.reservedUser = false;
 
@@ -83,6 +86,9 @@ class Quizzer {
             this.status.gameStatus.timer = this.config.timeouts.questionAfterFailure;
         }
 
+        clearInterval(this.status.intervals.asking);
+        clearInterval(this.status.intervals.responding);
+
         this.status.gameStatus.step = gameStatus.ASKING;
         this.sendGameStatus();
 
@@ -96,9 +102,11 @@ class Quizzer {
 
                 // Show failure message and then move forward
                 setTimeout(() =>  {
+                    clearInterval(this.status.intervals.asking);
+                    clearInterval(this.status.intervals.responding);
                     this.status.gameStatus.step = gameStatus.WAITING_QUESTION
                     this.sendGameStatus();
-                }, 3000)
+                }, 5000)
                 clearInterval(this.status.intervals.asking);
             }
 
@@ -135,12 +143,14 @@ class Quizzer {
         user.sendMessage("reservationAccepted", {
             questionId
         });
-        
+
         this.sendGameStatus()
 
         this.status.intervals.responding = setInterval(() => {
             this.status.gameStatus.timer -=1;
 
+            // User failed to respond in time
+            // Banning it and restarting with same question
             if (this.status.gameStatus.timer === 0) {
                 this.status.gameStatus.timer = this.config.timeouts.questionAfterFailure;
                 
@@ -149,7 +159,7 @@ class Quizzer {
                 this.status.gameStatus.step = gameStatus.USER_FAILED;
 
                 // Return to first step again
-                setTimeout(() =>  this.insertQuestion(false, false), 3000);
+                setTimeout(() =>  this.insertQuestion(false, false), 5000);
                 clearInterval(this.status.intervals.responding)
             }
 
@@ -189,12 +199,14 @@ class Quizzer {
         this.status.gameStatus.step = gameStatus.WAIT_CONFIRM;
 
         if (admin && admin.isAdmin() && user)
-            await admin.sendMessage("responseFromUser", {
+            admin.sendMessage("responseFromUser", {
                 user: user.getUserName(),
                 userId: user.getId(),
                 questionId,
                 responseText
             });
+
+        this.sendGameStatus();
         
         // In case the admin log out the system will wait until reenters. This data must be saved
         this.status.adminRecover = {
@@ -236,6 +248,13 @@ class Quizzer {
             // We have a winner!!! :D
             if (responder.getPoints() === this.config.pointsToWin)
                 this.status.gameStatus.step = gameStatus.GAME_FINISH;
+            else
+                setTimeout(() =>  {
+                    // Winned only the round
+
+                    this.status.gameStatus.step = gameStatus.WAITING_QUESTION;
+                    this.sendGameStatus();
+                }, 3000);
 
             this.sendGameStatus();
 
@@ -263,6 +282,12 @@ class Quizzer {
 
         this.status.gameStatus.step = gameStatus.WAITING_QUESTION;
         this.status.questions = []
+
+        clearInterval(this.status.intervals.asking);
+        clearInterval(this.status.intervals.responding);
+
+        this.status.gameStatus.timer = false;
+        this.status.gameStatus.reservedUser = false
 
         this.users.unbanAll();
         this.users.resetAllPoints();
@@ -306,6 +331,7 @@ class Quizzer {
             reservedUser: userObj,
             bannedUsers: this.users.getBannedUsersList(),
             points: this.users.getUsersPointsList(),
+            maxPoints: this.config.pointsToWin,
             ...question,
             timer: this.status.gameStatus.timer
         }

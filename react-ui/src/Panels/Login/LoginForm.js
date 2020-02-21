@@ -27,11 +27,15 @@ const mainStyle = theme => ({
     submit: {
       margin: theme.spacing(3, 0, 2),
     },
+    error: {
+      color: "red"
+    }
 })
 
 class LoginForm extends React.Component {
   constructor (props) {
     super(props);
+
     this.state = {
         username: ''
     };
@@ -49,6 +53,15 @@ class LoginForm extends React.Component {
     event.preventDefault();
   }
 
+  showErrors () {
+    const { classes } = this.props;
+
+    if (this.props.error)
+      return (<p className={classes.error}>{this.props.error}</p>)
+    return null;
+  }
+
+
   render () {
     const { classes } = this.props;
     return (
@@ -57,11 +70,9 @@ class LoginForm extends React.Component {
             <div className={classes.paper}>
                 <Header className={classes.avatar}/>
                 <Typography component="h1" variant="h4">
-                    Quizzer
+                  Quizzer
                 </Typography>
-                <Typography component="h2" variant="h6">
-                    Quiz like a boss
-                </Typography>
+                <div>{this.showErrors()}</div>
                 <form className={classes.form} noValidate onSubmit={this.handleSubmit}>
                     <TextField
                         variant="outlined"
@@ -81,7 +92,7 @@ class LoginForm extends React.Component {
                         color="primary"
                         className={classes.submit}
                     >
-                    Let's quiz!
+                    Let's start!
                     </Button>
                 </form>
             </div>

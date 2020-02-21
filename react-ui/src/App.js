@@ -17,12 +17,14 @@ export default class App extends React.Component {
         super(props)
 
         this.state = {
-            id: false,
+            userId: false,
             loggedAs: false,
             isAdmin: false,
             connectionError: false,
             errors: []
         }
+
+        this.userUpdate = this.userUpdate.bind(this);
     }
 
     componentDidMount () {
@@ -52,7 +54,9 @@ export default class App extends React.Component {
         })
 
         registerEvent("error", (data)  => {
-            this.showError(data.text)
+            // console.error("Socket error", data);
+            if (data.text)
+                this.showError(data.text)
        })
     }
 
@@ -92,11 +96,11 @@ export default class App extends React.Component {
 
     pageMode () {
         if (this.state.loggedAs !== false && this.state.isAdmin === true)
-            return <Admin username={this.state.loggedAs} userid={this.state.id}/>;
+            return <Admin userName={this.state.loggedAs} userId={this.state.userId}/>;
         else if (this.state.loggedAs !== false && this.state.isAdmin === false)
-            return <User username={this.state.loggedAs} userid={this.state.id}/>;
+            return <User userName={this.state.loggedAs} userId={this.state.userId}/>;
         else if (this.state.loggedAs === false)
-            return <Login />;
+            return <Login/>;
         else
             return (<div class="text-center">Error during page load. Please retry</div>)
     }

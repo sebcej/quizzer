@@ -307,7 +307,7 @@ describe("plugins", () => {
 
                 await quizzerInstance.adminDecided(questionId, admin.getId(), true);
 
-                chai.expect(broadcastedMessages).to.have.lengthOf(4)
+                chai.expect(broadcastedMessages).to.have.lengthOf(5)
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "QUESTION_RESPONSE_SUCCESS");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.reservedUser.id", user2.getId())
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.points."+ user2.getId(), 1);
@@ -327,7 +327,7 @@ describe("plugins", () => {
 
                 await quizzerInstance.adminDecided(questionId, admin.getId(), false);
 
-                chai.expect(broadcastedMessages).to.have.lengthOf(4);
+                chai.expect(broadcastedMessages).to.have.lengthOf(5);
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "QUESTION_RESPONSE_FAILED");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.reservedUser.id", user2.getId());
             
@@ -354,7 +354,7 @@ describe("plugins", () => {
                 }
 
                 chai.expect(user2.getPoints()).to.equal(5);
-                chai.expect(broadcastedMessages.length).to.equal(16);
+                chai.expect(broadcastedMessages.length).to.equal(21);
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "GAME_FINISH");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.points." + user2.getId(), config.pointsToWin);
