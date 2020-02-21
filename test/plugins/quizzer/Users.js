@@ -48,7 +48,7 @@ describe("plugins", () => {
         timers = sinon.useFakeTimers();
     })
 
-    context("@quizzer-User", () => {
+    context("@quizzer-Users", () => {
         context("login()", () => {
             it("Should login user and return it", () => {
                 let response = quizzerInstance.users.loginUser("tester"),

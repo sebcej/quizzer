@@ -1,7 +1,7 @@
 const md5 = require('md5');
 
 function makeToken (userId, user) {
-    return md5(`${userId} + ${process.env.SECRET} + token + ${user.userName}`)
+    return md5(`${userId} + ${process.env.SECRET} + token + ${user.userName} + ${user.creationDate}`)
 }
 
 module.exports = class User {
@@ -13,7 +13,8 @@ module.exports = class User {
             isAdmin: false,
             isBanned: false,
             points: 0,
-            connection: false
+            connection: false,
+            creationTime: new Date().getTime()
         }
 
         this.token = makeToken(id, this.user);
@@ -38,10 +39,6 @@ module.exports = class User {
 
     getPoints () {
         return this.user.points;
-    }
-
-    areTokensEqual (token) {
-        return token === this.token;
     }
 
     isLoggedIn () {
@@ -90,8 +87,8 @@ module.exports = class User {
         return this;
     }
 
-    checkToken (userId) {
-        return makeToken(userId, this.user) === this.token
+    checkToken (userId, receivedToken) {
+        return makeToken(userId, this.user) === this.token && this.token  === receivedToken;
     }
 
     setConnection (connection) {
