@@ -54,10 +54,9 @@ export default class App extends React.Component {
         })
 
         registerEvent("error", (data)  => {
-            // console.error("Socket error", data);
             if (data.text)
                 this.showError(data.text)
-            else
+            else if (data.message === "xhr poll error")
                 window.location.reload(); // Critical error with socket connection, reload page
        })
     }
