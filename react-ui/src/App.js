@@ -57,6 +57,8 @@ export default class App extends React.Component {
             // console.error("Socket error", data);
             if (data.text)
                 this.showError(data.text)
+            else
+                window.location.reload(); // Critical error with socket connection, reload page
        })
     }
 
