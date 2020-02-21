@@ -6,6 +6,7 @@ import Button from '@material-ui/core/Button';
 
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Alert from '@material-ui/lab/Alert';
 
 import { withStyles } from '@material-ui/core/styles';
 
@@ -39,6 +40,7 @@ class Admin extends React.Component {
 
         this.state= {
             gameStatus: false,
+            genericError: false,
             question: "",
             responseToQuestion: {
                 text: "",
@@ -49,16 +51,27 @@ class Admin extends React.Component {
         this.showGameStatus = this.showGameStatus.bind(this);
         this.responseToQuestion = this.responseToQuestion.bind(this);
         this.statusViewer = this.statusViewer.bind(this);
+        this.adminErrors = this.adminErrors.bind(this);
     }
 
     componentDidMount () {
         registerEvent("responseFromUser", this.responseToQuestion)
         registerEvent("questionStatus", this.showGameStatus)
+        registerEvent("error-admin", this.adminErrors)
     }
 
     componentWillUnmount () {
         unregisterEvent("responseFromUser", this.responseToQuestion)
-        registerEvent("questionStatus", this.showGameStatus)
+        unregisterEvent("error-admin", this.adminErrors)
+        unregisterEvent("questionStatus", this.showGameStatus)
+    }
+
+    adminErrors (data) {
+        if (!data.success)
+            this.setState({
+                ...this.state,
+                genericError: data.error
+            });
     }
 
     showGameStatus (data) {
@@ -231,6 +244,8 @@ class Admin extends React.Component {
                 <header>
                     <Header small/>
                 </header>
+
+                {this.state.genericError?<Alert onClose={() => {this.setState({...this.state, genericError: false})}} severity="error">{this.state.genericError}</Alert>:""}
 
                 {this.questionEditor()}
                 <br/>
