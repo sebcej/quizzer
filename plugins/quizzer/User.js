@@ -1,7 +1,7 @@
 const md5 = require('md5');
 
 function makeToken (userId, user) {
-    return md5(`${userId} + ${process.env.SECRET} + token + ${user.userName} + ${user.creationDate}`)
+    return md5(`${userId} + ${process.env.SECRET} + token + ${user.userName} + ${user.creationTime}`)
 }
 
 module.exports = class User {
