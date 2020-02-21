@@ -30,8 +30,8 @@ fastify.register(socketLoader, {
     onInit (io) {
         // Set broadcast connection
         quizzer.users.setConnection(io);
-        io.set('heartbeat timeout', 3000);
-        io.set('heartbeat interval', 10000);
+        io.set('heartbeat timeout', 5000);
+        io.set('heartbeat interval', 15000);
     },
     onMessage (action, socket) {
         /**
