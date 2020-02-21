@@ -24,12 +24,14 @@
     
         .magicSubmit {
             position: relative;
+            cursor:'pointer';
             width: 140px;
             height: 140px;
             border-radius: 100px;
             font-size: 25px;
 
             div {
+                cursor:'pointer';
                 font-size: 15px;
                 position: absolute;
                 left: 0;
