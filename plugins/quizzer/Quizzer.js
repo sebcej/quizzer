@@ -341,7 +341,7 @@ class Quizzer {
 
         if (userId)
             this.users.getUser(userId).sendMessage("questionStatus", data);
-        else
+        else if (this.users.hasConnection())
             this.users.sendMessage("questionStatus", data);
     }
 

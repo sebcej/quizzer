@@ -18,27 +18,34 @@ const proxyquire = require("proxyquire").noCallThru(),
 describe("plugins", () => {
     let quizzerInstance = null,
         sentMessages = [],
-        broadcastedMessages = []
+        broadcastedMessages = [],
+        timers = false,
+        socketConnection = {
+            emit: function (event, data, callback) {
+                sentMessages.push({
+                    event,
+                    data
+                })
+                callback()
+            },
+            sockets: {
+                emit: function (event, data) {
+                    broadcastedMessages.push({
+                        event, 
+                        data
+                    })
+                }
+            }
+        }
 
     // Reinitialize quizzer instance in order to have a clean environment before each test
     beforeEach(() => {
         sentMessages = [];
         broadcastedMessages = []
         quizzerInstance = quizzer(config, true);
-        quizzerInstance.users.setConnection({
-            emit: function (event, data) {
-                sentMessages.push({
-                    event,
-                    data
-                })
-            },
-            broadcast: function (event, data) {
-                broadcastedMessages.push({
-                    event, 
-                    data
-                })
-            }
-        })
+        quizzerInstance.users.setConnection(socketConnection);
+
+        timers = sinon.useFakeTimers();
     })
 
     context("@quizzer-User", () => {

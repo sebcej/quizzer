@@ -186,6 +186,10 @@ module.exports = class Users {
         return this;
     }
 
+    hasConnection () {
+        return !! this.connection;
+    }
+
     /**
      * 
      * Send message to ALL connected users
@@ -195,7 +199,7 @@ module.exports = class Users {
      */
 
     sendMessage (action, data) {
-        if (this.connection)
+        if (this.hasConnection())
             return this.connection.sockets.emit(action, data);
         throw new Error("NO_BROADCAST_CONNECTION");
     }
