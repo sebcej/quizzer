@@ -97,7 +97,7 @@ module.exports = class User {
     setConnection (connection) {
         this.lastInteraction = new Date().getTime();
         if (this.user.connection)
-            this.user.connection.close()
+            this.user.connection.disconnect();
 
         this.user.connection = connection;
 

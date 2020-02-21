@@ -15,6 +15,8 @@ The game allows a group of users to respond to an admin/master questions. The ma
 
 All steps are timed. When timeout occurs the question will be discarded or the user banned.
 
+When a user responds to 5 questions correctly (5 stars) will win the game. 
+
 ## Server Management
 
 ``` bash

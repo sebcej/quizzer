@@ -5,7 +5,7 @@ import Admin from "./Panels/Game/Admin";
 import User from "./Panels/Game/User";
 import Login from "./Panels/Login/Login";
 
-import {registerEvent, unregisterEvent} from "./tools/socket";
+import {registerEvent, unregisterEvent, sendEvent} from "./tools/socket";
 
 import Container from '@material-ui/core/Container';
 import Alert from '@material-ui/lab/Alert';
@@ -84,8 +84,10 @@ export default class App extends React.Component {
     componentWillUnmount () {
         unregisterEvent("userStatusUpdate", this.userUpdate);
         unregisterEvent("disconnect");
+        unregisterEvent("error");
         unregisterEvent("connect");
         unregisterEvent("connect_error");
+        //sendEvent("disconnect");
     }
 
     userUpdate (data) {
