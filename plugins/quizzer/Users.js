@@ -78,8 +78,6 @@ module.exports = class Users {
 
         let user = this.getUserByName(userName);
 
-        console.log("User when logging in", user)
-
         if (!user)
             user = this.newUser(userName);
 
