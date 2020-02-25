@@ -26,6 +26,8 @@ class Quizzer {
 
         this.users = new Users(config)
 
+        this.users.attachEvent("login", () => this.sendGameStatus());
+
         this.status = {
             questions: [],
             adminRecover: false,
@@ -339,7 +341,7 @@ class Quizzer {
 
         if (userId)
             this.users.getUser(userId).sendMessage("questionStatus", data);
-        else
+        else if (this.users.hasConnection())
             this.users.sendMessage("questionStatus", data);
     }
 

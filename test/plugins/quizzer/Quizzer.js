@@ -71,21 +71,23 @@ describe("plugins", () => {
             it("Should init new question and broadcast it to all users", async () => {
                 let {user, user2, text} = await prepare();
 
-                chai.expect(broadcastedMessages).to.be.lengthOf(1);
+                chai.expect(broadcastedMessages).to.be.lengthOf(4);
                 chai.expect(sentMessages).to.be.lengthOf(0);
 
-                chai.expect(broadcastedMessages[0]).to.have.property("event", "questionStatus");
-                chai.expect(broadcastedMessages[0]).to.have.nested.property("data.step", "ASKING");
-                chai.expect(broadcastedMessages[0]).to.have.nested.property("data.id", 0); // AS is first question we know that id is 0
-                chai.expect(broadcastedMessages[0]).to.have.nested.property("data.text", text);
+                const broadcasted = broadcastedMessages[3];
 
-                chai.expect(broadcastedMessages[0]).to.have.nested.property("data.timer", config.timeouts.question);
+                chai.expect(broadcasted).to.have.property("event", "questionStatus");
+                chai.expect(broadcasted).to.have.nested.property("data.step", "ASKING");
+                chai.expect(broadcasted).to.have.nested.property("data.id", 0); // AS is first question we know that id is 0
+                chai.expect(broadcasted).to.have.nested.property("data.text", text);
+
+                chai.expect(broadcasted).to.have.nested.property("data.timer", config.timeouts.question);
             });
 
             it("Should timeout and return to first step", async () => {
                 let {user, user2, text} = await prepare();
 
-                chai.expect(broadcastedMessages).to.be.lengthOf(1);
+                chai.expect(broadcastedMessages).to.be.lengthOf(4);
                 chai.expect(sentMessages).to.be.lengthOf(0);
 
                 // Pass n seconds
@@ -93,17 +95,17 @@ describe("plugins", () => {
                     timers.next()
                 }
 
-                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.question + 1);
+                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.question + 4);
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "QUESTION_FAILED");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.timer", false);
-                chai.expect(broadcastedMessages[1]).to.have.nested.property("data.step", "ASKING");
-                chai.expect(broadcastedMessages[1]).to.have.nested.property("data.timer", config.timeouts.question - 1);
+                chai.expect(broadcastedMessages[3]).to.have.nested.property("data.step", "ASKING");
+                chai.expect(broadcastedMessages[3]).to.have.nested.property("data.timer", config.timeouts.question);
 
                 // Return back
                 timers.next()
 
-                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.question + 2);
+                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.question + 5);
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "WAITING_QUESTION");
             });
         });
@@ -126,12 +128,12 @@ describe("plugins", () => {
 
                 // Pass timer 1x
                 timers.next()
-                
-                const questionId = broadcastedMessages[1].data.id;
+
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId());
 
-                chai.expect(broadcastedMessages).to.be.lengthOf(3); // Sent block message to all users
+                chai.expect(broadcastedMessages).to.be.lengthOf(6); // Sent block message to all users
                 chai.expect(sentMessages).to.be.lengthOf(1); // Sent reservation confirmation to the lucky user
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "RESERVED");
@@ -147,7 +149,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next()
                 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId());
 
@@ -156,9 +158,7 @@ describe("plugins", () => {
                     timers.next()
                 }
 
-                console.log(broadcastedMessages)
-
-                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.respond + 3); // Sent block message to all users
+                chai.expect(broadcastedMessages).to.be.lengthOf(config.timeouts.respond + 6); // Sent block message to all users
                 chai.expect(sentMessages).to.be.lengthOf(1); // Sent reservation confirmation to the lucky user
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "USER_FAILED");
@@ -197,7 +197,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId()); 
                 await quizzerInstance.sendResponseToAdmin(questionId, user.getId(), "Response text");
@@ -216,7 +216,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId()); 
 
@@ -238,7 +238,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId()); 
 
@@ -262,7 +262,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user2.getId()); 
 
@@ -286,7 +286,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user2.getId()); 
 
@@ -311,7 +311,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user2.getId()); 
 
@@ -319,7 +319,7 @@ describe("plugins", () => {
 
                 await quizzerInstance.adminDecided(questionId, admin.getId(), true);
 
-                chai.expect(broadcastedMessages).to.have.lengthOf(5)
+                chai.expect(broadcastedMessages).to.have.lengthOf(8)
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "QUESTION_RESPONSE_SUCCESS");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.reservedUser.id", user2.getId())
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.points."+ user2.getId(), 1);
@@ -331,7 +331,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next();
 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user2.getId()); 
 
@@ -339,7 +339,7 @@ describe("plugins", () => {
 
                 await quizzerInstance.adminDecided(questionId, admin.getId(), false);
 
-                chai.expect(broadcastedMessages).to.have.lengthOf(5);
+                chai.expect(broadcastedMessages).to.have.lengthOf(8);
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "QUESTION_RESPONSE_FAILED");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.reservedUser.id", user2.getId());
             
@@ -366,7 +366,7 @@ describe("plugins", () => {
                 }
 
                 chai.expect(user2.getPoints()).to.equal(5);
-                chai.expect(broadcastedMessages.length).to.equal(21);
+                chai.expect(broadcastedMessages.length).to.equal(24);
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "GAME_FINISH");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.points." + user2.getId(), config.pointsToWin);
@@ -381,7 +381,7 @@ describe("plugins", () => {
                 // Pass timer 1x
                 timers.next()
                 
-                const questionId = broadcastedMessages[1].data.id;
+                const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId());
 

@@ -6,25 +6,31 @@ import Button from '@material-ui/core/Button';
 
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
+import Alert from '@material-ui/lab/Alert';
 
 import { withStyles } from '@material-ui/core/styles';
 
 import Header from "../Header"
 
+import {errorMessages} from "../messages"
+
 import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 
 const mainStyle = theme => ({
+    errorSpacer: {
+        marginBottom: "10px"
+    },
     form: {
       width: '100%', // Fix IE 11 issue.
       marginTop: theme.spacing(1),
-      "text-align": "center"
+      textAlign: "center"
     },
     submit: {
       margin: theme.spacing(3, 0, 2)
     },
     submitSecondary: {
         margin: theme.spacing(3, 0, 2),
-        "margin-left": "15px"      
+        marginLeft: "15px"      
     },
     paper: {
         padding: theme.spacing(3)
@@ -39,6 +45,7 @@ class Admin extends React.Component {
 
         this.state= {
             gameStatus: false,
+            genericError: false,
             question: "",
             responseToQuestion: {
                 text: "",
@@ -49,16 +56,28 @@ class Admin extends React.Component {
         this.showGameStatus = this.showGameStatus.bind(this);
         this.responseToQuestion = this.responseToQuestion.bind(this);
         this.statusViewer = this.statusViewer.bind(this);
+        this.adminErrors = this.adminErrors.bind(this);
+        this.getError = this.getError.bind(this);
     }
 
     componentDidMount () {
         registerEvent("responseFromUser", this.responseToQuestion)
         registerEvent("questionStatus", this.showGameStatus)
+        registerEvent("error-admin", this.adminErrors)
     }
 
     componentWillUnmount () {
         unregisterEvent("responseFromUser", this.responseToQuestion)
-        registerEvent("questionStatus", this.showGameStatus)
+        unregisterEvent("error-admin", this.adminErrors)
+        unregisterEvent("questionStatus", this.showGameStatus)
+    }
+
+    adminErrors (data) {
+        if (!data.success)
+            this.setState({
+                ...this.state,
+                genericError: data.error
+            });
     }
 
     showGameStatus (data) {
@@ -158,7 +177,7 @@ class Admin extends React.Component {
                                     id="standard-basic" 
                                     label="Response to question"
                                     multiline
-                                    disabled
+                                    readonly
                                     value={this.state.responseToQuestion.text}
                                     rows="4"
                                 />
@@ -225,12 +244,29 @@ class Admin extends React.Component {
         return null;
     }
 
+    getError () {
+        const error = errorMessages[this.state.genericError];
+
+        if (error)
+            return error;
+
+        return this.state.genericError;
+    }
+
     render () {
+        let classes = this.props.classes
+
         return (
             <div>
                 <header>
                     <Header small/>
                 </header>
+
+                {
+                    this.state.genericError?
+                        <div className={classes.errorSpacer}><Alert onClose={() => {this.setState({...this.state, genericError: false})}} severity="error">{this.getError()}</Alert></div>
+                    :""
+                }
 
                 {this.questionEditor()}
                 <br/>

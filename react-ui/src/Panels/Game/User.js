@@ -24,25 +24,28 @@ import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 import Header from "../Header"
 
 const mainStyle = theme => ({
+    margin: {
+        marginTop: "10px"
+    },
     paper: {
         padding: theme.spacing(3),
-        "background-color": "#A9E5E0",
-        "text-align": "center"
+        backgroundColor: "#A9E5E0",
+        textAlign: "center"
     },
     paperSuccess: {
         padding: theme.spacing(3),
-        "background-color": "#DDEDAA",
-        "text-align": "center"
+        backgroundColor: "#DDEDAA",
+        textAlign: "center"
     },
     paperWarn: {
         padding: theme.spacing(3),
-        "background-color": "#FFD1BA",
-        "text-align": "center"
+        backgroundColor: "#FFD1BA",
+        textAlign: "center"
     },
     paperError: {
         padding: theme.spacing(3),
-        "background-color": "#BF7085",
-        "text-align": "center"
+        backgroundColor: "#BF7085",
+        textAlign: "center"
     }
 });
 

@@ -13,6 +13,8 @@ module.exports = class Users {
 
         this.users = []
         this.bannedUsers = []
+
+        this.events = {}
     }
 
     getAll () {
@@ -29,6 +31,8 @@ module.exports = class Users {
     }
 
     getUserByName (userName) {
+        userName = cleanUserName(userName);
+
         let userInstance = false;
 
         for (let i = 0; i < this.users.length; i++) {
@@ -45,7 +49,7 @@ module.exports = class Users {
 
     newUser (userName) {
         userName = cleanUserName(userName);
-
+        
         if (!userName)
             throw new Error("NO_USERNAME");
 
@@ -70,6 +74,8 @@ module.exports = class Users {
      */
 
     loginUser (userName) {
+        userName = cleanUserName(userName);
+
         let user = this.getUserByName(userName);
 
         if (!user)
@@ -79,6 +85,8 @@ module.exports = class Users {
             throw new Error("USER_ALREADY_LOGGED");
 
         user.setLoggedIn(true);
+
+        this.events["login"]&&this.events["login"](user);
 
         return user
     }
@@ -176,6 +184,16 @@ module.exports = class Users {
         return loggedUsers;
     }
 
+    attachEvent (eventName, callback) {
+        this.events[eventName] = callback;
+
+        return this;
+    }
+
+    hasConnection () {
+        return !! this.connection;
+    }
+
     /**
      * 
      * Send message to ALL connected users
@@ -185,7 +203,7 @@ module.exports = class Users {
      */
 
     sendMessage (action, data) {
-        if (this.connection)
+        if (this.hasConnection())
             return this.connection.sockets.emit(action, data);
         throw new Error("NO_BROADCAST_CONNECTION");
     }

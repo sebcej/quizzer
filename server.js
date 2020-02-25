@@ -8,7 +8,7 @@ global.paths = {
 }
 
 const fastify = require("fastify")({
-        logs: true
+        logs: process.env.DEBUG_REQUESTS
     }),
     config = require(global.paths.config)
     path = require("path"),
@@ -44,13 +44,15 @@ fastify.register(socketLoader, {
             return false;
         const user = quizzer.users.getUser(action.user.userId);
 
-        return user && user.areTokensEqual(action.user.token) && user.checkToken(action.user.userId)
+        return user && user.checkToken(action.user.userId, action.user.token);
     },
     onDisconnect (socket) {
         // Logout user as connection has dropped. If the user has reloaded the page will be reconnected by linkSocket
 
         if (this.session.userId)
             quizzer.users.getUser(this.session.userId).setLogged(false);
+
+        quizzer.sendGameStatus();
     }
 })
 

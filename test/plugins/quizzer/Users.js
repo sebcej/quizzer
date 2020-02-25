@@ -18,30 +18,37 @@ const proxyquire = require("proxyquire").noCallThru(),
 describe("plugins", () => {
     let quizzerInstance = null,
         sentMessages = [],
-        broadcastedMessages = []
+        broadcastedMessages = [],
+        timers = false,
+        socketConnection = {
+            emit: function (event, data, callback) {
+                sentMessages.push({
+                    event,
+                    data
+                })
+                callback()
+            },
+            sockets: {
+                emit: function (event, data) {
+                    broadcastedMessages.push({
+                        event, 
+                        data
+                    })
+                }
+            }
+        }
 
     // Reinitialize quizzer instance in order to have a clean environment before each test
     beforeEach(() => {
         sentMessages = [];
         broadcastedMessages = []
         quizzerInstance = quizzer(config, true);
-        quizzerInstance.users.setConnection({
-            emit: function (event, data) {
-                sentMessages.push({
-                    event,
-                    data
-                })
-            },
-            broadcast: function (event, data) {
-                broadcastedMessages.push({
-                    event, 
-                    data
-                })
-            }
-        })
+        quizzerInstance.users.setConnection(socketConnection);
+
+        timers = sinon.useFakeTimers();
     })
 
-    context("@quizzer-User", () => {
+    context("@quizzer-Users", () => {
         context("login()", () => {
             it("Should login user and return it", () => {
                 let response = quizzerInstance.users.loginUser("tester"),
@@ -55,6 +62,11 @@ describe("plugins", () => {
     
             it("Should throw error as user is empty", () => {
                 chai.expect(() => quizzerInstance.users.loginUser()).to.Throw("NO_USERNAME")
+            })
+
+            it("Should prevent login from uppercase and lowercase users", () => {
+                quizzerInstance.users.loginUser("Chaos")
+                chai.expect(() => quizzerInstance.users.loginUser("chaos")).to.Throw("USER_ALREADY_LOGGED")
             })
     
             it("Should return error the second time as user is already logged", () => {

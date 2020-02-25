@@ -4,7 +4,7 @@ import api from "../../tools/api"
 import LoginForm from "./LoginForm"
 import {sendEvent, registerUser} from "../../tools/socket";
 
-import errors from "../errors"
+import {errorMessages} from "../messages"
 
 export default class Login extends React.Component {
     constructor (props) {
@@ -84,7 +84,7 @@ export default class Login extends React.Component {
     render () {
         if (this.state.visible)
             return (
-                <LoginForm onSubmit={this.loggingUser} error={this.state.error?errors[this.state.error]:false}/>
+                <LoginForm onSubmit={this.loggingUser} error={this.state.error?errorMessages[this.state.error]:false}/>
             );
         return null;
     }
