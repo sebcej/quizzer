@@ -31,6 +31,8 @@ module.exports = class Users {
     }
 
     getUserByName (userName) {
+        userName = cleanUserName(userName);
+
         let userInstance = false;
 
         for (let i = 0; i < this.users.length; i++) {
@@ -47,7 +49,7 @@ module.exports = class Users {
 
     newUser (userName) {
         userName = cleanUserName(userName);
-
+        
         if (!userName)
             throw new Error("NO_USERNAME");
 
@@ -72,7 +74,11 @@ module.exports = class Users {
      */
 
     loginUser (userName) {
+        userName = cleanUserName(userName);
+
         let user = this.getUserByName(userName);
+
+        console.log("User when logging in", user)
 
         if (!user)
             user = this.newUser(userName);
