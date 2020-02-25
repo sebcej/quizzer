@@ -24,6 +24,9 @@ import {registerEvent, sendEvent, unregisterEvent} from "../../tools/socket";
 import Header from "../Header"
 
 const mainStyle = theme => ({
+    margin: {
+        "margin-top": "10px"
+    },
     paper: {
         padding: theme.spacing(3),
         "background-color": "#A9E5E0",
