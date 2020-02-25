@@ -8,7 +8,7 @@ global.paths = {
 }
 
 const fastify = require("fastify")({
-        logs: true
+        logs: process.env.DEBUG_REQUESTS
     }),
     config = require(global.paths.config)
     path = require("path"),
