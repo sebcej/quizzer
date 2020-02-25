@@ -171,7 +171,7 @@ class Admin extends React.Component {
                                     id="standard-basic" 
                                     label="Response to question"
                                     multiline
-                                    disabled
+                                    readonly
                                     value={this.state.responseToQuestion.text}
                                     rows="4"
                                 />
