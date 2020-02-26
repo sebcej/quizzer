@@ -358,7 +358,6 @@ class Quizzer {
      * @param {User} adminUser User object that is administrator
      */
     recoverAdminStatus (adminUser) {
-        console.log(this.status.adminRecover, adminUser.isAdmin())
         if (this.status.adminRecover && adminUser && adminUser.isAdmin())
             setTimeout(() => adminUser.sendMessage("responseFromUser", this.status.adminRecover), 500);
     }
