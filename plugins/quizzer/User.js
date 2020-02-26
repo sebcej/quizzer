@@ -1,3 +1,14 @@
+/**
+ * User class
+ * 
+ * Contains all main single user data. 
+ * 
+ * - Socket connection to server
+ * - Auth token
+ * - Points
+ * - Ban status
+ */
+
 const md5 = require('md5');
 
 function makeToken (userId, user) {
@@ -87,12 +98,27 @@ module.exports = class User {
         return this;
     }
 
+    /**
+     * Chedck that token corresponds to the one present on client side. Check also that the userId has not been tampered
+     * 
+     * @param {Number} userId User id
+     * @param {String} receivedToken Authentication token
+     */
+
     checkToken (userId, receivedToken) {
         return makeToken(userId, this.user) === this.token && this.token  === receivedToken;
     }
 
+    /**
+     * Set connection to frontend
+     * 
+     * @param {Socket} connection User's socket
+     */
+
     setConnection (connection) {
         this.lastInteraction = new Date().getTime();
+
+        // Force disconnection from old frontend if present
         if (this.user.connection)
             this.user.connection.disconnect();
 
@@ -100,6 +126,12 @@ module.exports = class User {
 
         return this;
     }
+
+    /**
+     * 
+     * @param {String} action Action that code must perform on client's side
+     * @param {Object} data Data to be sent to frontend
+     */
 
     async sendMessage (action, data) {
         if (this.user.connection)
@@ -112,6 +144,10 @@ module.exports = class User {
             });
         throw Error("NO_CONNECTION")
     }
+
+    /**
+     * Send user status directly to user's terminal
+     */
 
     async sendStatus () {
         return await this.sendMessage("userStatusUpdate", {

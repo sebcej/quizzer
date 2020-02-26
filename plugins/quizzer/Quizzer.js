@@ -58,7 +58,8 @@ class Quizzer {
 
     async insertQuestion (adminId, questionText) {
 
-        // Case when user has waited too much or has failed the response
+        // Normal flow happens when questionText and adminId are not false.
+        // The other case happens when user has waited too much or has failed the response
         // The user is banned and the question restarts with new timer
         if (questionText !== false && adminId !== false) {
             if (this.status.gameStatus.step === gameStatus.ASKING)
@@ -69,7 +70,7 @@ class Quizzer {
             if (!admin.isAdmin())
                 throw new Error("NO_ADMIN")
 
-            if (questionText === "")
+            if (!questionText || (questionText && questionText.trim() === ""))
                 throw new Error("NO_TEXT")
 
             this.users.unbanAll();
@@ -94,6 +95,7 @@ class Quizzer {
         this.status.gameStatus.step = gameStatus.ASKING;
         this.sendGameStatus();
 
+        // Wait until the user responds or time finishes
         this.status.intervals.asking = setInterval(() => {
             this.status.gameStatus.timer -=1;
 
@@ -180,7 +182,7 @@ class Quizzer {
         if (this.status.gameStatus.step !== gameStatus.RESERVED)
             throw new Error("BROKEN_FLOW");
 
-        if (!responseText || responseText.trim() == "")
+        if (!responseText || (responseText && responseText.trim() == ""))
             throw new Error("NO_RESPONSE");
 
         if (this.status.questions.length - 1 !== questionId)

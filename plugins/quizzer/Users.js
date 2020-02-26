@@ -47,6 +47,13 @@ module.exports = class Users {
         return userInstance;
     }
 
+    /**
+     * 
+     * Create new user based on the name inserted. If already present the creation will fail
+     * 
+     * @param {String} userName User name
+     */
+
     newUser (userName) {
         userName = cleanUserName(userName);
         
