@@ -18,6 +18,8 @@ module.exports = async function (socket, data) {
     user.setConnection(socket).setLoggedIn(true);
     this.session.userId = data.userId;
 
+    quizzer.users.triggerEvent("connection", user.getId());
+
     await user.sendStatus()
     await quizzer.sendGameStatus(data.userId);
     

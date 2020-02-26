@@ -1,3 +1,14 @@
+/**
+ * 
+ * Users class
+ * 
+ * Available events:
+ * 
+ * - Login - On user login
+ * - Connection - On user connection
+ * 
+ */
+
 const User = require("./User");
 
 function cleanUserName (userName) {
@@ -192,6 +203,18 @@ module.exports = class Users {
 
     attachEvent (eventName, callback) {
         this.events[eventName] = callback;
+
+        return this;
+    }
+
+    triggerEvent (eventName, userId) {
+        const user = this.getUser(userId);
+
+        if (this.events[eventName] && user)
+            this.events[eventName](user);
+        else {
+            throw new Error ("Called non existent event, ", eventName);
+        }
 
         return this;
     }

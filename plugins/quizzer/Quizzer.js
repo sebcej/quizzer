@@ -26,9 +26,9 @@ class Quizzer {
 
         this.users = new Users(config)
 
-        this.users.attachEvent("login", (user) => {
+        this.users.attachEvent("connection", (user) => {
             this.sendGameStatus()
-            if (user.isLoggedIn())
+            if (user.isAdmin())
                 this.recoverAdminStatus(user)
         });
 
@@ -351,9 +351,16 @@ class Quizzer {
             this.users.sendMessage("questionStatus", data);
     }
 
+
+    /**
+     * Wait a moment for complete reconnection and resend question response if needed.
+     * 
+     * @param {User} adminUser User object that is administrator
+     */
     recoverAdminStatus (adminUser) {
+        console.log(this.status.adminRecover, adminUser.isAdmin())
         if (this.status.adminRecover && adminUser && adminUser.isAdmin())
-            adminUser.sendMessage("responseFromUser", this.status.adminRecover);
+            setTimeout(() => adminUser.sendMessage("responseFromUser", this.status.adminRecover), 500);
     }
 }
 
