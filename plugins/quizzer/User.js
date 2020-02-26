@@ -113,8 +113,9 @@ module.exports = class User {
         this.lastInteraction = new Date().getTime();
 
         // Force disconnection from old frontend if present
-        if (this.user.connection && this.user.connection !== connection)
-            this.user.connection.disconnect();
+        // Disabled because was disconnecting other frontend also if tab was opened (for example during user switch). Not needed as fixed by timeouts.
+        /*if (this.user.connection && this.user.connection !== connection)
+            this.user.connection.disconnect();*/
 
         this.user.connection = connection;
 
