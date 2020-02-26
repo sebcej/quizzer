@@ -462,6 +462,8 @@ describe("plugins", () => {
 
                 await quizzerInstance.recoverAdminStatus(admin);
 
+                timers.next(); // Run timer for response
+
                 chai.expect(sentMessages).to.be.lengthOf(3);
 
                 // Check if message has been resent

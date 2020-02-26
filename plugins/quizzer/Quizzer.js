@@ -26,10 +26,10 @@ class Quizzer {
 
         this.users = new Users(config)
 
+        this.users.attachEvent("login", () => this.sendGameStatus());
         this.users.attachEvent("connection", (user) => {
-            this.sendGameStatus()
             if (user.isAdmin())
-                this.recoverAdminStatus(user)
+                this.recoverAdminStatus(user);
         });
 
         this.status = {

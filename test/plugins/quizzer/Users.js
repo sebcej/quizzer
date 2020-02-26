@@ -123,6 +123,18 @@ describe("plugins", () => {
             })
         })
 
+        context("attachEvent()-triggerEvent()", () => {
+            it("Should attach and trigger event", async () => {
+                let fun = sinon.fake()
+                const user = quizzerInstance.users.loginUser("tester");
+                quizzerInstance.users.attachEvent("test", fun);
+
+                quizzerInstance.users.triggerEvent("test",user.getId());
+
+                chai.expect(fun.called).to.equal(true);
+            });
+        })
+
         context("banUser()", () => {
             it("Should not ban a not present user", () => {
                 chai.expect(() => quizzerInstance.users.banUser("tester")).to.Throw("NO_USER")
