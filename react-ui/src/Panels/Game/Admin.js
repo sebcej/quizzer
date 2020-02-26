@@ -177,7 +177,7 @@ class Admin extends React.Component {
                                     id="standard-basic" 
                                     label="Response to question"
                                     multiline
-                                    readonly
+                                    readOnly
                                     value={this.state.responseToQuestion.text}
                                     rows="4"
                                 />
@@ -258,9 +258,7 @@ class Admin extends React.Component {
 
         return (
             <div>
-                <header>
-                    <Header small/>
-                </header>
+                <Header small/>
 
                 {
                     this.state.genericError?

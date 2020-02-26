@@ -319,9 +319,7 @@ class User extends React.Component {
 
         return (
             <div>
-                <header>
-                    <Header small/>
-                </header>
+                <Header small/>
                 <div className="text-center">
                     {this.getStars()}
                 </div>

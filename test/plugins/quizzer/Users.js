@@ -68,6 +68,15 @@ describe("plugins", () => {
                 quizzerInstance.users.loginUser("Chaos")
                 chai.expect(() => quizzerInstance.users.loginUser("chaos")).to.Throw("USER_ALREADY_LOGGED")
             })
+
+            it("Check if mixed login/logout with uppercase/lowercase user works", () => {
+                quizzerInstance.users.loginUser("Chaos")
+                const user = quizzerInstance.users.getUserByName("chaos")
+
+                user.setLoggedIn(false)
+
+                chai.expect(quizzerInstance.users.loginUser("chaos")).to.be.an("object")
+            })
     
             it("Should return error the second time as user is already logged", () => {
                 let response = quizzerInstance.users.loginUser("tester")
@@ -81,6 +90,18 @@ describe("plugins", () => {
     
                 chai.expect(response.getDetails()).to.have.property("userName", "admin")
                 chai.expect(quizzerInstance.users.getUserByName("admin").getDetails()).to.have.property("isAdmin", true)
+            })
+        })
+
+        context("getLoggedUsersList()", () => {
+            it("Should get one user  as is the only logged in", () => {
+                const user = quizzerInstance.users.loginUser("tester"),
+                user2 = quizzerInstance.users.loginUser("tester2");
+
+                user.setLoggedIn(true);
+                user2.setLoggedIn(false);
+
+                chai.expect(quizzerInstance.users.getLoggedUsersList()).to.be.lengthOf(1)
             })
         })
 
@@ -100,6 +121,18 @@ describe("plugins", () => {
 
                 chai.expect(() => quizzerInstance.users.setConnection({}, "admin")).to.Throw("NO_USER")
             })
+        })
+
+        context("attachEvent()-triggerEvent()", () => {
+            it("Should attach and trigger event", async () => {
+                let fun = sinon.fake()
+                const user = quizzerInstance.users.loginUser("tester");
+                quizzerInstance.users.attachEvent("test", fun);
+
+                quizzerInstance.users.triggerEvent("test",user.getId());
+
+                chai.expect(fun.called).to.equal(true);
+            });
         })
 
         context("banUser()", () => {

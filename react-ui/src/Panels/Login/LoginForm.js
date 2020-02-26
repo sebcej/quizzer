@@ -67,8 +67,8 @@ class LoginForm extends React.Component {
     return (
         <Container component="main" maxWidth="xs">
             <CssBaseline />
+            <Header className={classes.avatar}/>
             <div className={classes.paper}>
-                <Header className={classes.avatar}/>
                 <Typography component="h1" variant="h4">
                   Quizzer
                 </Typography>

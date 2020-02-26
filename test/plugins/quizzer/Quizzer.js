@@ -46,8 +46,8 @@ describe("plugins", () => {
     })
 
     context("@quizzer-Quizzer", () => {
-        async function prepare() {
-            const text = "What time is it?";
+        async function prepare(alternateText, blockQuestionInsertion) {
+            const text = alternateText?alternateText:"What time is it?";
 
             const admin = quizzerInstance.users.loginUser(config.adminUserName),
                   user = quizzerInstance.users.loginUser("tester"),
@@ -57,7 +57,8 @@ describe("plugins", () => {
             user.setConnection(socketConnection);
             user2.setConnection(socketConnection);
 
-            await quizzerInstance.insertQuestion(1, text);
+            if (!blockQuestionInsertion)
+                await quizzerInstance.insertQuestion(1, text);
 
             return {
                 admin,
@@ -82,6 +83,32 @@ describe("plugins", () => {
                 chai.expect(broadcasted).to.have.nested.property("data.text", text);
 
                 chai.expect(broadcasted).to.have.nested.property("data.timer", config.timeouts.question);
+            });
+
+            it("Should fail as no text provided", async () => {
+                let {user, user2, text} = await prepare(false, true);
+
+                try {
+                    await quizzerInstance.insertQuestion(1, "")
+                } catch (e) {
+                    chai.expect(e).to.have.property("message", "NO_TEXT");
+                    return;
+                }
+
+                chai.assert.fail("No error happened");
+            });
+
+            it("Should fail as only spaces provided", async () => {
+                let {user, user2, text} = await prepare(false, true);
+
+                try {
+                    await quizzerInstance.insertQuestion(1, " ")
+                } catch (e) {
+                    chai.expect(e).to.have.property("message", "NO_TEXT");
+                    return;
+                }
+
+                chai.assert.fail("No error happened");
             });
 
             it("Should timeout and return to first step", async () => {
@@ -109,18 +136,6 @@ describe("plugins", () => {
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "WAITING_QUESTION");
             });
         });
-
-        context("getLoggedUsersList()", () => {
-            it("Should get one user  as is the only logged in", () => {
-                const user = quizzerInstance.users.loginUser("tester"),
-                user2 = quizzerInstance.users.loginUser("tester2");
-
-                user.setLoggedIn(true);
-                user2.setLoggedIn(false);
-
-                chai.expect(quizzerInstance.users.getLoggedUsersList()).to.be.lengthOf(1)
-            })
-        })
 
         context("reserveResponse()", () => {
             it("Should allow reservation and notify all partecipants", async () => {
@@ -219,17 +234,35 @@ describe("plugins", () => {
                 const questionId = broadcastedMessages[3].data.id;
 
                 await quizzerInstance.reserveResponse(questionId, user.getId()); 
-
-                let throwed = false;
                 
                 try {
                     await quizzerInstance.sendResponseToAdmin(questionId, user.getId(), "");
                 } catch (e) {
                     chai.expect(e.message).to.equal("NO_RESPONSE");
-                    throwed = true;
+                    return;
                 }
 
-                chai.expect(throwed).to.equal(true);
+                chai.assert.fail("No error happened")
+            });
+
+            it("Should fail as questionId is incorrect", async () => {
+                let {admin, user, user2, text} = await prepare();
+
+                // Pass timer 1x
+                timers.next();
+
+                const questionId = broadcastedMessages[3].data.id;
+
+                await quizzerInstance.reserveResponse(questionId, user.getId()); 
+                
+                try {
+                    await quizzerInstance.sendResponseToAdmin(999, user.getId(), "TEST");
+                } catch (e) {
+                    chai.expect(e.message).to.equal("QUESTION_ID_MISMATCH");
+                    return;
+                }
+
+                chai.assert.fail("No error happened")
             });
 
             it("Should fail as user is not present", async () => {
@@ -242,18 +275,16 @@ describe("plugins", () => {
 
                 await quizzerInstance.reserveResponse(questionId, user.getId()); 
 
-                let throwed = false;
-
                 user2.setBanned(true);
                 
                 try {
                     await quizzerInstance.sendResponseToAdmin(questionId, 999, "Test");
                 } catch (e) {
                     chai.expect(e.message).to.equal("USER_MISMATCH");
-                    throwed = true;
+                    return;
                 }
 
-                chai.expect(throwed).to.equal(true, "Instance must throw error");
+                chai.assert.fail("Instance must throw error")
             });
 
             it("Should fail as user is banned", async () => {
@@ -266,41 +297,16 @@ describe("plugins", () => {
 
                 await quizzerInstance.reserveResponse(questionId, user2.getId()); 
 
-                let throwed = false;
-
                 user2.setBanned(true);
                 
                 try {
                     await quizzerInstance.sendResponseToAdmin(questionId, user2.getId(), "Test");
                 } catch (e) {
                     chai.expect(e.message).to.equal("USER_BANNED");
-                    throwed = true;
+                    return
                 }
 
-                chai.expect(throwed).to.equal(true, "Instance must throw error");
-            });
-
-            it("Should save and recover admin status", async () => {
-                let {admin, user, user2, text} = await prepare();
-
-                // Pass timer 1x
-                timers.next();
-
-                const questionId = broadcastedMessages[3].data.id;
-
-                await quizzerInstance.reserveResponse(questionId, user2.getId()); 
-
-                await quizzerInstance.sendResponseToAdmin(questionId, user2.getId(), "Test");
-
-                chai.expect(sentMessages).to.be.lengthOf(2);
-
-                await quizzerInstance.recoverAdminStatus(admin.getId());
-
-                chai.expect(sentMessages).to.be.lengthOf(3);
-
-                // Check if message has been resent
-                chai.expect(sentMessages[sentMessages.length - 1]).to.have.nested.property("data.userId", user2.getId())
-                
+                chai.assert.fail("Instance must throw error")
             });
         })
 
@@ -325,7 +331,7 @@ describe("plugins", () => {
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.points."+ user2.getId(), 1);
             });
 
-            it("Should accept question as admin rejected it and ban user", async () => {
+            it("Should reject question as admin rejected it and ban user", async () => {
                 let {admin, user, user2, text} = await prepare();
 
                 // Pass timer 1x
@@ -344,6 +350,26 @@ describe("plugins", () => {
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.reservedUser.id", user2.getId());
             
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1].data.points).to.be.deep.equal({})
+            });
+
+            it("Should fail as status is not correct", async () => {
+                let {admin, user, user2, text} = await prepare();
+
+                // Pass timer 1x
+                timers.next();
+
+                const questionId = broadcastedMessages[3].data.id;
+
+                await quizzerInstance.reserveResponse(questionId, user2.getId()); 
+
+                try {
+                    await quizzerInstance.adminDecided(questionId, admin.getId(), false)
+                } catch (e) {
+                    chai.expect(e).to.have.property("message", "BROKEN_FLOW")
+                    return;
+                }
+
+                chai.assert.fail("No error happened")
             });
 
             it("Should win", async () => {
@@ -416,6 +442,52 @@ describe("plugins", () => {
 
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.have.nested.property("data.step", "WAITING_QUESTION");
                 chai.expect(broadcastedMessages[broadcastedMessages.length - 1]).to.not.have.nested.property("data.text");
+            });
+        })
+
+        context("recoverAdminStatus", () => {
+            it("Should save and recover admin status", async () => {
+                let {admin, user, user2, text} = await prepare();
+
+                // Pass timer 1x
+                timers.next();
+
+                const questionId = broadcastedMessages[3].data.id;
+
+                await quizzerInstance.reserveResponse(questionId, user2.getId()); 
+
+                await quizzerInstance.sendResponseToAdmin(questionId, user2.getId(), "Test");
+
+                chai.expect(sentMessages).to.be.lengthOf(2);
+
+                await quizzerInstance.recoverAdminStatus(admin);
+
+                timers.next(); // Run timer for response
+
+                chai.expect(sentMessages).to.be.lengthOf(3);
+
+                // Check if message has been resent
+                chai.expect(sentMessages[sentMessages.length - 1]).to.have.nested.property("data.userId", user2.getId())
+                
+            });
+
+            it("Should fail as is not admin", async () => {
+                let {admin, user, user2, text} = await prepare();
+
+                // Pass timer 1x
+                timers.next();
+
+                const questionId = broadcastedMessages[3].data.id;
+
+                await quizzerInstance.reserveResponse(questionId, user2.getId()); 
+
+                await quizzerInstance.sendResponseToAdmin(questionId, user2.getId(), "Test");
+
+                chai.expect(sentMessages).to.be.lengthOf(2);
+
+                await quizzerInstance.recoverAdminStatus(user);
+
+                chai.expect(sentMessages).to.be.lengthOf(2);                
             });
         })
     })

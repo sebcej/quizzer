@@ -4,7 +4,7 @@ module.exports = async function (socket, data) {
     if (!data.userId || !data.token)
         return fatalError();
 
-    let user = false
+    let user = false;
 
     try {
         user = quizzer.users.getUser(data.userId);
@@ -15,8 +15,10 @@ module.exports = async function (socket, data) {
     if (!user)
         return fatalError();
 
-    user.setConnection(socket).setLogged(true);
+    user.setConnection(socket).setLoggedIn(true);
     this.session.userId = data.userId;
+
+    quizzer.users.triggerEvent("connection", user.getId());
 
     await user.sendStatus()
     await quizzer.sendGameStatus(data.userId);

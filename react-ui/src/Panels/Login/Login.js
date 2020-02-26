@@ -21,7 +21,7 @@ export default class Login extends React.Component {
     }
 
     componentDidMount () {
-        let storage = window.sessionStorage;
+        let storage = window.localStorage;
 
         // Login users if already logged in with localstorage
         if (storage.userId && storage.token){
@@ -66,8 +66,8 @@ export default class Login extends React.Component {
                 token: data.token
             });
 
-            window.sessionStorage.userId = data.userId
-            window.sessionStorage.token = data.token
+            window.localStorage.userId = data.userId
+            window.localStorage.token = data.token
 
             this.setState({
                 ...this.state,

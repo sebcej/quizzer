@@ -1,16 +1,27 @@
-.mainLogo {
-    text-align: center;
-    margin: 0px auto;
-    width: 50vw;
-    max-width: 200px;
-    padding: 30px;
+header {
+    position: relative;
 
-    img {
-        width: 100%;
+    .mainLogo {
+        text-align: center;
+        margin: 0px auto;
+        width: 50vw;
+        max-width: 200px;
+        padding: 30px;
+    
+        img {
+            width: 100%;
+        }
+    
+        &.small img {
+            max-width: 30px;
+        }
     }
 
-    &.small img {
-        max-width: 30px;
+    .logoutButton {
+        position: absolute;
+        right: 5px;
+        top:30px;
+        cursor: pointer;
     }
 }
 

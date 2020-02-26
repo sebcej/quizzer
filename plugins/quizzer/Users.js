@@ -1,3 +1,14 @@
+/**
+ * 
+ * Users class
+ * 
+ * Available events:
+ * 
+ * - Login - On user login
+ * - Connection - On user connection
+ * 
+ */
+
 const User = require("./User");
 
 function cleanUserName (userName) {
@@ -12,7 +23,6 @@ module.exports = class Users {
         this.connection = false;
 
         this.users = []
-        this.bannedUsers = []
 
         this.events = {}
     }
@@ -46,6 +56,13 @@ module.exports = class Users {
 
         return userInstance;
     }
+
+    /**
+     * 
+     * Create new user based on the name inserted. If already present the creation will fail
+     * 
+     * @param {String} userName User name
+     */
 
     newUser (userName) {
         userName = cleanUserName(userName);
@@ -186,6 +203,18 @@ module.exports = class Users {
 
     attachEvent (eventName, callback) {
         this.events[eventName] = callback;
+
+        return this;
+    }
+
+    triggerEvent (eventName, userId) {
+        const user = this.getUser(userId);
+
+        if (this.events[eventName] && user)
+            this.events[eventName](user);
+        else {
+            throw new Error ("Called non existent event, ", eventName);
+        }
 
         return this;
     }

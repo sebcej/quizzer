@@ -50,7 +50,7 @@ fastify.register(socketLoader, {
         // Logout user as connection has dropped. If the user has reloaded the page will be reconnected by linkSocket
 
         if (this.session.userId)
-            quizzer.users.getUser(this.session.userId).setLogged(false);
+            quizzer.users.getUser(this.session.userId).setLoggedIn(false);
 
         quizzer.sendGameStatus();
     }
