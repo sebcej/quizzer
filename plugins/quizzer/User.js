@@ -80,12 +80,6 @@ module.exports = class User {
         return this.user.isBanned = isBanned || false;
     }
 
-    setLogged (isLogged) {
-        this.user.isLogged = isLogged || false;
-
-        return this;
-    }
-
     setPoints (number) {
         this.user.points = number || 0;
 
@@ -119,7 +113,7 @@ module.exports = class User {
         this.lastInteraction = new Date().getTime();
 
         // Force disconnection from old frontend if present
-        if (this.user.connection)
+        if (this.user.connection && this.user.connection !== connection)
             this.user.connection.disconnect();
 
         this.user.connection = connection;

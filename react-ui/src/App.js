@@ -32,6 +32,23 @@ export default class App extends React.Component {
             this.userUpdate(data);
         });
 
+        registerEvent("moveTo", (data) => {
+            if (data.page === "login") {
+                // Reset state
+
+                window.sessionStorage.userId = undefined;
+                window.sessionStorage.token = undefined;
+
+                this.setState({
+                    ...this.state,
+                    userId: false,
+                    loggedAs: false,
+                    isAdmin: false,
+                    connectionError: false
+                })
+            }
+        });
+
         registerEvent("disconnect", (data)  => {
             this.setState({
                 ...this.state,
@@ -84,6 +101,7 @@ export default class App extends React.Component {
     componentWillUnmount () {
         unregisterEvent("userStatusUpdate", this.userUpdate);
         unregisterEvent("disconnect");
+        unregisterEvent("moveTo");
         unregisterEvent("error");
         unregisterEvent("connect");
         unregisterEvent("connect_error");

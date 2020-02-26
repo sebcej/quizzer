@@ -73,7 +73,7 @@ describe("plugins", () => {
                 quizzerInstance.users.loginUser("Chaos")
                 const user = quizzerInstance.users.getUserByName("chaos")
 
-                user.setLogged(false)
+                user.setLoggedIn(false)
 
                 chai.expect(quizzerInstance.users.loginUser("chaos")).to.be.an("object")
             })

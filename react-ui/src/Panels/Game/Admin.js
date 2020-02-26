@@ -258,9 +258,7 @@ class Admin extends React.Component {
 
         return (
             <div>
-                <header>
-                    <Header small/>
-                </header>
+                <Header small/>
 
                 {
                     this.state.genericError?
