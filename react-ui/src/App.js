@@ -36,8 +36,8 @@ export default class App extends React.Component {
             if (data.page === "login") {
                 // Reset state
 
-                window.sessionStorage.userId = undefined;
-                window.sessionStorage.token = undefined;
+                window.localStorage.userId = undefined;
+                window.localStorage.token = undefined;
 
                 this.setState({
                     ...this.state,
