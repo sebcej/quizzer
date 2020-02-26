@@ -12,7 +12,6 @@ module.exports = class Users {
         this.connection = false;
 
         this.users = []
-        this.bannedUsers = []
 
         this.events = {}
     }

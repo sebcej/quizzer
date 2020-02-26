@@ -26,7 +26,11 @@ class Quizzer {
 
         this.users = new Users(config)
 
-        this.users.attachEvent("login", () => this.sendGameStatus());
+        this.users.attachEvent("login", (user) => {
+            this.sendGameStatus()
+            if (user.isLoggedIn())
+                this.recoverAdminStatus(user)
+        });
 
         this.status = {
             questions: [],
@@ -347,11 +351,9 @@ class Quizzer {
             this.users.sendMessage("questionStatus", data);
     }
 
-    recoverAdminStatus (adminId) {
-        const admin = this.users.getUser(adminId);
-
-        if (this.status.adminRecover && admin && admin.isAdmin())
-            admin.sendMessage("responseFromUser", this.status.adminRecover);
+    recoverAdminStatus (adminUser) {
+        if (this.status.adminRecover && adminUser && adminUser.isAdmin())
+            adminUser.sendMessage("responseFromUser", this.status.adminRecover);
     }
 }
 
